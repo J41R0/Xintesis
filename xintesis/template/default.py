@@ -245,7 +245,7 @@ class DefaultVisitorTest(unittest.TestCase):
 
     def test_homepage(self):
         # Test Sample project homepage
-        self.browser.get('http://localhost:5000/simple_demo')
+        self.browser.get('http://localhost:5000/default')
         # Default title test
         self.assertIn('Default', self.browser.title)
 
@@ -265,20 +265,20 @@ def create_defaults(dir):
 
     # default package files
     with open(dir + "/packages/demo/__init__.py", 'w') as demo_init:
-        demo_init.write(demo_init)
+        demo_init.write(def_init)
 
     with open(dir + "/packages/demo/services.py", 'w') as demo_pack_services:
         demo_pack_services.write(demo_pack)
 
     # default project files
-    with open(dir + "/projects/default/__init__.py", 'w') as def_init:
-        def_init.write(def_init)
+    with open(dir + "/projects/default/__init__.py", 'w') as def_proj_init:
+        def_proj_init.write(def_init)
 
     with open(dir + "/projects/default/config.yaml", 'w') as def_proj_cfg:
         def_proj_cfg.write(proj_cfg)
 
-    with open(dir + "/projects/default/services.py", 'w') as def_pack_services:
-        def_pack_services.write(demo_proj)
+    with open(dir + "/projects/default/services.py", 'w') as def_proj_services:
+        def_proj_services.write(demo_proj)
 
-    with open(dir + "/projects/default/test/test_project.py", 'w') as def_pack_test:
-        def_pack_test.write(demo_test)
+    with open(dir + "/projects/default/test/test_project.py", 'w') as def_proj_test:
+        def_proj_test.write(demo_test)

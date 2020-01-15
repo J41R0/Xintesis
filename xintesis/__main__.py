@@ -37,7 +37,7 @@ def create_api(dir, r):
     Path(wdir + "/doc").mkdir(exist_ok=True)
     Path(wdir + "/modules").mkdir(exist_ok=True)
     Path(wdir + "/packages/demo/test").mkdir(parents=True, exist_ok=True)
-    Path(wdir + "/projects/simple_demo/test").mkdir(parents=True, exist_ok=True)
+    Path(wdir + "/projects/default/test").mkdir(parents=True, exist_ok=True)
     Path(wdir + "/test").mkdir(exist_ok=True)
 
     default.create_defaults(wdir)
