@@ -8,7 +8,7 @@ Require:
 * flask_jwt_extended >= 3.10.0
 * jinja2 >= 2.10.1
 * click >= 7.0
-* selenium >= 3.141.0
+* selenium-requests >= 1.3
 
 Install using:
 

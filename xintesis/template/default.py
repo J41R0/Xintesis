@@ -158,7 +158,7 @@ class DemoPack:
         # saving file    
         if my_input['img_file'].filename not in project.model_lsdir():
             # internally use secure filename 
-            project.model_save_file(save_file_path, file) 
+            project.model_save_file(save_file_dir, file) 
         
         # returning a file, the only case to return 3 params 
         return True, project.model_lsdir()[-1], "file"
@@ -208,15 +208,15 @@ class DemoProj:
     @service_pack.delete_method
     def test_method(project, input, obj_dict):
         \"\"\" Complex help
-        \n This method do nothing but show a JSON as doc 
-        \n JSON: 
-        \n\t {
-        \n\t "features" :
-        \n\t   [
-        \n\t\t     {"name": "temperature", "val": 32},
-        \n\t\t     {"name": "weight", "val": 55},
-        \n\t   ]
-        \n\t }
+        \\n This method do nothing but show a JSON as doc 
+        \\n JSON: 
+        \\n\\t {
+        \\n\\t "features" :
+        \\n\\t   [
+        \\n\\t\\t     {"name": "temperature", "val": 32},
+        \\n\\t\\t     {"name": "weight", "val": 55},
+        \\n\\t   ]
+        \\n\\t }
         \"\"\"
         # exceptions are handled in other place 
         # params can be access using kwargs or the variables project, input, obj_dict
@@ -228,26 +228,62 @@ class DemoProj:
         # a method with no doc in API
         print(kwargs)
         return True, 42
+    
+    @service_pack.post_expect
+    def post_expect():
+        expect = dict()
+        expect["text"] = fields.String(required=True, description='A test parameter')
+        return expect
 
+    @service_pack.post_method
+    def test_method3(**kwargs):
+        return True, kwargs['input']
+
+    @service_pack.put_expect
+    def put_expect():
+        data = reqparse.RequestParser()
+        data.add_argument('some_data',
+                          required=False,
+                          type=int,
+                          location='form',
+                          help='Some optional data')
+        return data
+
+    @service_pack.put_method
+    def test_method4(**kwargs):
+        return True, kwargs['input']
 """
 
-demo_test = """from selenium import webdriver
-import unittest
+demo_test = """import unittest
+from seleniumrequests import Firefox
 
 
 class DefaultVisitorTest(unittest.TestCase):
 
     def setUp(self):
-        self.browser = webdriver.Firefox()
+        self.browser = Firefox()
 
     def tearDown(self):
         self.browser.quit()
 
     def test_homepage(self):
         # Test Sample project homepage
-        self.browser.get('http://localhost:5000/default')
+        self.browser.get('http://localhost:5000/default_proj')
         # Default title test
         self.assertIn('Default', self.browser.title)
+        
+    def test_post(self):
+        res = self.browser.request('POST', 'http://localhost:5000/default_proj/default_proj/DemoProj',
+                                   json={"text": "string"})
+        self.assertEqual({'success': True, 'data': {'text': 'string'}, 'message': ''}, res.json())
+
+    def test_put(self):
+        res = self.browser.request('PUT', 'http://localhost:5000/default_proj/default_proj/DemoProj',
+                                   data={"some_data": "string"})
+        self.assertEqual({'success': True, 'data': {'some_data': 'string'}, 'message': ''}, res.json())
+
+    def test_all(self):
+        self.fail('Finish the test!')
 
 
 if __name__ == '__main__':
@@ -271,14 +307,14 @@ def create_defaults(dir):
         demo_pack_services.write(demo_pack)
 
     # default project files
-    with open(dir + "/projects/default/__init__.py", 'w') as def_proj_init:
+    with open(dir + "/projects/default_proj/__init__.py", 'w') as def_proj_init:
         def_proj_init.write(def_init)
 
-    with open(dir + "/projects/default/config.yaml", 'w') as def_proj_cfg:
+    with open(dir + "/projects/default_proj/config.yaml", 'w') as def_proj_cfg:
         def_proj_cfg.write(proj_cfg)
 
-    with open(dir + "/projects/default/services.py", 'w') as def_proj_services:
+    with open(dir + "/projects/default_proj/services.py", 'w') as def_proj_services:
         def_proj_services.write(demo_proj)
 
-    with open(dir + "/projects/default/test/test_project.py", 'w') as def_proj_test:
+    with open(dir + "/projects/default_proj/test/test_project.py", 'w') as def_proj_test:
         def_proj_test.write(demo_test)
