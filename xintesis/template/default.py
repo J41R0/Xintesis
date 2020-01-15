@@ -279,8 +279,8 @@ class DefaultVisitorTest(unittest.TestCase):
 
     def test_put(self):
         res = self.browser.request('PUT', 'http://localhost:5000/default_proj/default_proj/DemoProj',
-                                   data={"some_data": "string"})
-        self.assertEqual({'success': True, 'data': {'some_data': 'string'}, 'message': ''}, res.json())
+                                   data={"some_data": 42})
+        self.assertEqual({'success': True, 'data': {'some_data': 42}, 'message': ''}, res.json())
 
     def test_all(self):
         self.fail('Finish the test!')
