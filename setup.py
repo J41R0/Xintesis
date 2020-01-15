@@ -21,7 +21,8 @@ setuptools.setup(
         'flask_cors >= 3.0.7',
         'flask_jwt_extended >= 3.10.0',
         'jinja2 >= 2.10.1',
-        'click >= 7.0'
+        'click >= 7.0',
+        'selenium >= 3.141.0'
     ],
     python_requires='>=3.6',
     classifiers=[

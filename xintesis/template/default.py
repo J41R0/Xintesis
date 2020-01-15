@@ -66,7 +66,7 @@ datefmt = %%Y-%%m-%%d %%H:%%M:%%S
 """
 
 proj_cfg = """---
-project name: Sample project
+project name: Default
 security:
   use_security: False
 description: >
@@ -87,39 +87,6 @@ config:
     type: file
     file_path: model
 --- 
-
-"""
-
-demo_proj = """from xintesis import ServicePack
-from flask_restplus import Resource, fields, reqparse
-
-service_pack = ServicePack("My project general description.")
-
-
-@service_pack.service
-class DemoProj:
-    @service_pack.delete_method
-    def test_method(project, input, obj_dict):
-        \"\"\" Complex help
-        \n This method do nothing but show a JSON as doc 
-        \n JSON: 
-        \n\t {
-        \n\t "features" :
-        \n\t   [
-        \n\t\t     {"name": "temperature", "val": 32},
-        \n\t\t     {"name": "weight", "val": 55},
-        \n\t   ]
-        \n\t }
-        \"\"\"
-        # exceptions are handled in other place 
-        raise Exception("help")
-        return True, "Never see it"
-
-    @service_pack.get_method
-    def test_method2(**kwargs):
-        # a method with no doc in API
-        print(kwargs)
-        return True, 42
 
 """
 
@@ -230,6 +197,63 @@ class DemoPack:
 
 """
 
+demo_proj = """from xintesis import ServicePack
+from flask_restplus import Resource, fields, reqparse
+
+service_pack = ServicePack("My project general description.")
+
+
+@service_pack.service
+class DemoProj:
+    @service_pack.delete_method
+    def test_method(project, input, obj_dict):
+        \"\"\" Complex help
+        \n This method do nothing but show a JSON as doc 
+        \n JSON: 
+        \n\t {
+        \n\t "features" :
+        \n\t   [
+        \n\t\t     {"name": "temperature", "val": 32},
+        \n\t\t     {"name": "weight", "val": 55},
+        \n\t   ]
+        \n\t }
+        \"\"\"
+        # exceptions are handled in other place 
+        # params can be access using kwargs or the variables project, input, obj_dict
+        raise Exception("help")
+        return True, "Never see it"
+
+    @service_pack.get_method
+    def test_method2(**kwargs):
+        # a method with no doc in API
+        print(kwargs)
+        return True, 42
+
+"""
+
+demo_test = """from selenium import webdriver
+import unittest
+
+
+class DefaultVisitorTest(unittest.TestCase):
+
+    def setUp(self):
+        self.browser = webdriver.Firefox()
+
+    def tearDown(self):
+        self.browser.quit()
+
+    def test_homepage(self):
+        # Test Sample project homepage
+        self.browser.get('http://localhost:5000/simple_demo')
+        # Default title test
+        self.assertIn('Default', self.browser.title)
+
+
+if __name__ == '__main__':
+    unittest.main(warnings='ignore')
+"""
+
 
 def create_defaults(dir):
     # default app files
@@ -241,17 +265,20 @@ def create_defaults(dir):
 
     # default package files
     with open(dir + "/packages/demo/__init__.py", 'w') as demo_init:
-        demo_init.write(def_init)
+        demo_init.write(demo_init)
 
     with open(dir + "/packages/demo/services.py", 'w') as demo_pack_services:
         demo_pack_services.write(demo_pack)
 
     # default project files
-    with open(dir + "/projects/simple_demo/__init__.py", 'w') as demo_init:
-        demo_init.write(def_init)
+    with open(dir + "/projects/default/__init__.py", 'w') as def_init:
+        def_init.write(def_init)
 
-    with open(dir + "/projects/simple_demo/config.yaml", 'w') as new_proj_cfg:
-        new_proj_cfg.write(proj_cfg)
+    with open(dir + "/projects/default/config.yaml", 'w') as def_proj_cfg:
+        def_proj_cfg.write(proj_cfg)
 
-    with open(dir + "/projects/simple_demo/services.py", 'w') as demo_pack_services:
-        demo_pack_services.write(demo_proj)
+    with open(dir + "/projects/default/services.py", 'w') as def_pack_services:
+        def_pack_services.write(demo_proj)
+
+    with open(dir + "/projects/default/test/test_project.py", 'w') as def_pack_test:
+        def_pack_test.write(demo_test)
