@@ -9,7 +9,7 @@ setuptools.setup(
     scripts=[],
     author="Jairo Lefebre",
     author_email="jairo.lefebre@gmail.com",
-    description="A Docker and AWS utility package",
+    description="Simple Python Flask based REST API builder",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/J41R0/Xintesis",
