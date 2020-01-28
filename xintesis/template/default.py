@@ -283,7 +283,8 @@ class DefaultVisitorTest(unittest.TestCase):
         self.assertEqual({'success': True, 'data': {'some_data': 42}, 'message': ''}, res.json())
 
     def test_all(self):
-        self.fail('Finish the test!')
+        self.fail('Finish the project!')
+
 
 
 if __name__ == '__main__':
