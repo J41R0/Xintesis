@@ -286,7 +286,6 @@ class DefaultVisitorTest(unittest.TestCase):
         self.fail('Finish the project!')
 
 
-
 if __name__ == '__main__':
     unittest.main(warnings='ignore')
 """
