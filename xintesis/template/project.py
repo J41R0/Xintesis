@@ -20,7 +20,7 @@ project = Project("{{name}}")
 
 # header
 authorizations = {'api_key': {'type': 'apiKey', 'in': 'header', 'name': 'XSA-API-KEY'}}
-project_api = Blueprint('{{name}}', __name__, url_prefix='/{{name}}')
+project_api = Blueprint('{{name}}', __name__, url_prefix='/{{name}}/api')
 {{name}}_api = Api(project_api, title='{{show_name}} Project', description='{{description}}', authorizations=authorizations)
 
 

@@ -94,7 +94,7 @@ class XthEngine:
             port = manager.config_get("server", "port")
             # register each project API
             for project in projects_dict.keys():
-                logging.info("http://" + host + ':' + port + '/' + str(project) + '/')
+                logging.info("Running endpoint at: " + host + ':' + port + '/' + str(project) + '/')
                 app.register_blueprint(projects_dict[project][API])
                 # save ref to API blue print
                 # manager.set_singleton(projects_dict[project][API], name=project + "_API")

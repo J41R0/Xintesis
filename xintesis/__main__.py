@@ -42,7 +42,7 @@ def create_api(dir, r):
 
     default.create_defaults(wdir)
 
-    print("New API created in '" + wdir + "'")
+    print("New service API created in '" + wdir + "'")
 
 
 xsa_cli.add_command(help)

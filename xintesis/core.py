@@ -18,7 +18,7 @@ pack_dir = ""
 mod_dir = ""
 
 
-def init_core():
+def init():
     pack_dir = os.path.join(xintesis.PROJECT_PATH, 'packages')
     mod_dir = os.path.join(xintesis.PROJECT_PATH, 'modules')
     manager.server_modules = os.listdir(mod_dir)
