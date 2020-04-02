@@ -14,7 +14,7 @@ from xintesis import manager
 from xintesis.template.project import *
 
 
-class XthEngine:
+class XtsEngine:
     """
     Xintesis engine class for load data for server start and all services interfaces generation
     """
@@ -30,7 +30,7 @@ class XthEngine:
         Returns: None
 
         """
-        app = XthEngine.load_app()
+        app = XtsEngine.load_app()
         CORS(app)
         if manager.server_loaded:
             server_mode = manager.config_get("server", "mode")
@@ -73,9 +73,9 @@ class XthEngine:
             # init all project custom objects
             for project in os.listdir(proj_dir):
                 if project not in projects_dict.keys() and os.path.isdir(os.path.join(proj_dir, project)) and \
-                        XthEngine.__is_valid_folder(proj_dir, project):
+                        XtsEngine.__is_valid_folder(proj_dir, project):
                     logging.info("Loading project " + project)
-                    proj_data = XthEngine.__load_project(project, os.path.join(proj_dir, project))
+                    proj_data = XtsEngine.__load_project(project, os.path.join(proj_dir, project))
                     if proj_data:
                         # tuple: <api, project obj>
                         projects_dict[project] = proj_data
@@ -192,7 +192,7 @@ class XthEngine:
             logging.error("Ignored particular services due: " + str(err))
 
         # init project data
-        XthEngine.__init_project_data(proj_id)
+        XtsEngine.__init_project_data(proj_id)
         hide_api = False
         if "mode" in curr_cfg.keys() and curr_cfg["mode"] == "release":
             hide_api = True
@@ -223,7 +223,7 @@ class XthEngine:
         # init security config
         if use_security:
             # load and init security component
-            XthEngine.__load_component(proj_id, project, security_data, project_deps)
+            XtsEngine.__load_component(proj_id, project, security_data, project_deps)
 
         logging.info("Project " + proj_id + " API generated")
         return project, project_api
@@ -253,7 +253,7 @@ class XthEngine:
                     if curr_cfg is not None:
                         if all_deps_ok:
                             # load and init each project component
-                            XthEngine.__load_component(proj_id, project, curr_cfg, project_deps)
+                            XtsEngine.__load_component(proj_id, project, curr_cfg, project_deps)
                         if first:
                             # for firs loading step
                             first = False
@@ -265,7 +265,7 @@ class XthEngine:
                                 raise Exception("Project " + proj_id + " can not load all required dependencies")
                             else:
                                 all_deps_ok = True
-                            project, project_api = XthEngine.__initial_load(proj_id, curr_cfg, project_deps)
+                            project, project_api = XtsEngine.__initial_load(proj_id, curr_cfg, project_deps)
 
                 # project_deps.remove(proj_id)
                 if len(project_deps) != 0:
