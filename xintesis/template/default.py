@@ -44,8 +44,6 @@ port = 5000
 mode = debug
 # application name
 app_name = app
-# secert key for jwt auth
-jwt_secret_key = may the force be with you ...
 
 [logging]
 # path to file to write logs

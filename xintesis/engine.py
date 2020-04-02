@@ -59,7 +59,7 @@ class XtsEngine:
         manager.load()
         # create application
         app = Flask("Xintesis Server")
-        app.config['JWT_SECRET_KEY'] = manager.config_get("server", "jwt_secret_key", fallback="kame kame ha!!!")
+        app.config['JWT_SECRET_KEY'] = os.getenv('XTS_SECRET_KEY', "may the force be with you ...")
         app.config['JWT_HEADER_NAME'] = 'XSA-API-KEY'
         app.config['JWT_HEADER_TYPE'] = str
         app.config['JWT_ALGORITHM'] = 'HS512'
