@@ -9,7 +9,7 @@ from flask_restplus import Api, Resource
 from flask_jwt_extended import jwt_optional, decode_token
 from jwt.exceptions import DecodeError as JWTDecodeError, ExpiredSignatureError
 
-from xintesis import Project
+from xintesis import Project, ServicePack
 
 # const definition
 SUCC = 0
@@ -126,6 +126,8 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
                     code = res_type if res_type in (401, 403) else 418{% else %}
                     code = 418{% endif %}
                 return response, code
+            except ServicePack.XtsServiceException as err:
+                return err.response, err.resp_code
             except Exception as err:
                 return {"success": False, "message": str(err)}, 418{% endif %}
 {% if current_component.my_services[curr_serv_pack].post["active"] %}{% if current_component.my_services[curr_serv_pack].post["expect"] and not current_component.my_services[curr_serv_pack].post["parser"] %}
@@ -209,6 +211,8 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
                     code = res_type if res_type in (401, 403) else 418{% else %}
                     code = 418{% endif %}
                 return response, code
+            except ServicePack.XtsServiceException as err:
+                return err.response, err.resp_code
             except Exception as err:
                 return {"success": False, "message": str(err)}, 418{% endif %}
 {% if current_component.my_services[curr_serv_pack].put["active"] %}{% if current_component.my_services[curr_serv_pack].put["expect"] and not current_component.my_services[curr_serv_pack].put["parser"] %}
@@ -292,6 +296,8 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
                     code = res_type if res_type in (401, 403) else 418{% else %}
                     code = 418{% endif %}
                 return response, code
+            except ServicePack.XtsServiceException as err:
+                return err.response, err.resp_code
             except Exception as err:
                 return {"success": False, "message": str(err)}, 418{% endif %}
 {% if current_component.my_services[curr_serv_pack].delete["active"] %}{% if current_component.my_services[curr_serv_pack].delete["expect"] and not current_component.my_services[curr_serv_pack].delete["parser"] %}
@@ -372,6 +378,8 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
                     code = res_type if res_type in (401, 403) else 418{% else %}
                     code = 418{% endif %}
                 return response, code
+            except ServicePack.XtsServiceException as err:
+                return err.response, err.resp_code
             except Exception as err:
                 return {"success": False, "message": str(err)}, 418{% endif %}{% endfor %}{% endfor %}
 """

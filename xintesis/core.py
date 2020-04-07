@@ -528,3 +528,8 @@ class ServicePack(object):
         def __init__(self, msg):
             response = {"success": False, "message": str(msg)}
             resp_code = 401
+
+    class XtsServiceForbidden(XtsServiceException):
+        def __init__(self, msg):
+            response = {"success": False, "message": str(msg)}
+            resp_code = 403
