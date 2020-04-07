@@ -41,14 +41,96 @@ class StaticMethod(object):
         return self.func(*args, **kwargs)
 
 
+class ProjectFile:
+    def __init__(self, project_name):
+        self.model_path = os.path.join(xintesis.PROJECT_PATH, "model/" + project_name)
+        self.log = None
+
+    def set_logger(self, logger):
+        self.log = logger
+
+    def save_file(self, path, file_data):
+        try:
+            if type(file_data) == FileStorage:
+                file_data.save(self.model_path + "/" + path + "/" + secure_filename(file_data.filename))
+            else:
+                file = open(self.model_path + "/" + path, 'w')
+                file.write(file_data)
+                file.close()
+            return True
+        except Exception as err:
+            self.log.debug(str(err))
+        return False
+
+    def get_file(self, path):
+        try:
+            file = open(self.model_path + "/" + path, 'r')
+            file_data = file.read()
+            file.close()
+            return file_data
+        except Exception as err:
+            self.log.debug(str(err))
+
+    def lsdir(self, path="", only_dir=False):
+        try:
+            if path == "":
+                if only_dir:
+                    return [x for x in os.listdir(self.model_path) if os.path.isdir(self.model_path + "/" + x)]
+                else:
+                    return list(os.listdir(self.model_path))
+            else:
+                temp_path = self.model_path + "/" + path
+                if only_dir:
+                    return [x for x in os.listdir(temp_path) if os.path.isdir(temp_path + "/" + x)]
+                else:
+                    return list(os.listdir(temp_path))
+
+        except Exception as err:
+            self.log.debug(str(err))
+
+    def walk_dir(self):
+        try:
+            return [x[0] for x in os.walk(self.model_path)]
+        except Exception as err:
+            self.log.debug(str(err))
+
+    def mkdir(self, dir_name):
+        try:
+            os.mkdir(self.model_path + "/" + dir_name)
+            return True
+        except Exception as err:
+            self.log.debug(str(err))
+
+    def rm_data(self, path):
+        try:
+            if os.path.isfile(self.model_path + "/" + path):
+                os.remove(self.model_path + "/" + path)
+            else:
+                shutil.rmtree(self.model_path + "/" + path)
+            return True
+        except Exception as err:
+            self.log.debug(str(err))
+
+    def exist(self, path):
+        try:
+            return os.path.exists(self.model_path + "/" + path)
+        except Exception as err:
+            self.log.debug(str(err))
+
+    def renamedir(self, path, new_path):
+        try:
+            return os.rename(self.model_path + "/" + path, self.model_path + "/" + new_path)
+        except Exception as err:
+            self.log.debug(str(err))
+
+
 class Project:
     def __init__(self, name):
         self.name = name
         # required None init
         self.log = None
         self.__log_handler = None
-        # self.log = self.init_logger()
-        self.model_path = os.path.join(xintesis.PROJECT_PATH, "model/" + name)
+        self.file_handler = ProjectFile(self.name)
         self.__objects = dict()
         self.__shared_obj = dict()
         self.uri_list = list()
@@ -120,82 +202,8 @@ class Project:
             formatter = logging.Formatter(format, date_format)
             self.__log_handler.setFormatter(formatter)
             self.log.addHandler(self.__log_handler)
-
+        self.file_handler.set_logger(self.log)
         return self.log
-
-    def model_save_file(self, path, file_data):
-        try:
-            if type(file_data) == FileStorage:
-                file_data.save(self.model_path + "/" + path + "/" + secure_filename(file_data.filename))
-            else:
-                file = open(self.model_path + "/" + path, 'w')
-                file.write(file_data)
-                file.close()
-            return True
-        except Exception as err:
-            self.log.debug(str(err))
-        return False
-
-    def model_get_file(self, path):
-        try:
-            file = open(self.model_path + "/" + path, 'r')
-            file_data = file.read()
-            file.close()
-            return file_data
-        except Exception as err:
-            self.log.debug(str(err))
-
-    def model_lsdir(self, path="", only_dir=False):
-        try:
-            if path == "":
-                if only_dir:
-                    return [x for x in os.listdir(self.model_path) if os.path.isdir(self.model_path + "/" + x)]
-                else:
-                    return list(os.listdir(self.model_path))
-            else:
-                temp_path = self.model_path + "/" + path
-                if only_dir:
-                    return [x for x in os.listdir(temp_path) if os.path.isdir(temp_path + "/" + x)]
-                else:
-                    return list(os.listdir(temp_path))
-
-        except Exception as err:
-            self.log.debug(str(err))
-
-    def model_walk_dir(self):
-        try:
-            return [x[0] for x in os.walk(self.model_path)]
-        except Exception as err:
-            self.log.debug(str(err))
-
-    def model_mkdir(self, dir_name):
-        try:
-            os.mkdir(self.model_path + "/" + dir_name)
-            return True
-        except Exception as err:
-            self.log.debug(str(err))
-
-    def model_rm(self, path):
-        try:
-            if os.path.isfile(self.model_path + "/" + path):
-                os.remove(self.model_path + "/" + path)
-            else:
-                shutil.rmtree(self.model_path + "/" + path)
-            return True
-        except Exception as err:
-            self.log.debug(str(err))
-
-    def model_exist(self, path):
-        try:
-            return os.path.exists(self.model_path + "/" + path)
-        except Exception as err:
-            self.log.debug(str(err))
-
-    def model_renamedir(self, path, new_path):
-        try:
-            return os.rename(self.model_path + "/" + path, self.model_path + "/" + new_path)
-        except Exception as err:
-            self.log.debug(str(err))
 
 
 class Service:

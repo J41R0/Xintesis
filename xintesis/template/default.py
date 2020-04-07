@@ -151,16 +151,16 @@ class DemoPack:
         
         file = input['some_file']
         save_file_dir = "downloads" 
-        if not project.model_exist(save_file_dir):
-            project.model_mkdir(save_file_dir)
+        if not project.exist(save_file_dir):
+            project.mkdir(save_file_dir)
         
         # saving file    
-        if my_input['img_file'].filename not in project.model_lsdir():
+        if my_input['img_file'].filename not in project.lsdir():
             # internally use secure filename 
-            project.model_save_file(save_file_dir, file) 
+            project.save_file(save_file_dir, file) 
         
         # returning a file, the only case to return 3 params 
-        return True, project.model_lsdir()[-1], "file"
+        return True, project.lsdir()[-1], "file"
         
     @service_pack.put_expect
     def expect_put():
