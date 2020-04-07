@@ -142,7 +142,9 @@ class Project:
     def init_objects(self):
         try:
             module_ini_obj = import_module('projects.' + self.name)
-            self.__objects[self.name] = module_ini_obj.init_objects(self.config)
+            load_cfg = self.config.copy()
+            load_cfg['uris'] = self.uri_list.copy()
+            self.__objects[self.name] = module_ini_obj.init_objects(load_cfg)
         except:
             logging.warning("Cannot init project " + self.name + " objects due error importing 'init_objects' function")
 
@@ -157,7 +159,7 @@ class Project:
     def set_uris(self, component_uri_dict):
         for key, uri_list in component_uri_dict.items():
             for uri in uri_list:
-                self.uri_list.append(self.name + "/" + key + "/" + uri)
+                self.uri_list.append(self.name + "/api/" + key + "/" + uri)
 
     def shared(self):
         if len(self.__shared_obj) != 0:
