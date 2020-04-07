@@ -518,35 +518,13 @@ class ServicePack(object):
         static_call = StaticMethod(func)
         return static_call
 
+    # Xintesis Service  Exceptions
+    class XtsServiceException(Exception):
+        def __init__(self, msg, code=418):
+            response = {"success": False, "message": str(msg)}
+            resp_code = code
 
-def audit_action(action):
-    def decorator_func(func):
-        def wrapper_func(*args, **kwargs):
-            # Invoke the wrapped function first
-            retval = func(*args, **kwargs)
-            # Now do something here with retval and/or action
-            print('In wrapper_func, handling action {!r} after wrapped function returned {!r}'.format(action, retval))
-            return retval
-
-        return wrapper_func
-
-    return decorator_func
-
-
-def exception_handler(function):
-    @wraps(function)
-    def with_exception(*args, **kwargs):
-        try:
-            return function(*args, **kwargs)
-        except Exception as err:
-            msg = f"{function.__name__}:: " + str(err)
-            builtins_exceptions = (AttributeError, AssertionError, ArithmeticError, OSError, ConnectionError,
-                                   LookupError, ImportError, SyntaxError, TypeError, NameError, UnicodeError,
-                                   ValueError)
-            for exc in builtins_exceptions:
-                if isinstance(err, exc):
-                    raise exc(msg)
-            raise Exception(msg)
-        # raise type(err)(msg).with_traceback(sys.exc_info()[2])
-
-    return with_exception
+    class XtsServiceUnauthorized(XtsServiceException):
+        def __init__(self, msg):
+            response = {"success": False, "message": str(msg)}
+            resp_code = 401
