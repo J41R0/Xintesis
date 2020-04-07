@@ -93,7 +93,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
                 return {"success": False, "message": "Unauthorized access"}, 401
 
             user = identity["user"]
-            uri = "{{name}}/{{current_component.name}}/{{curr_serv_pack}}/GET"
+            uri = "{{name}}/api/{{current_component.name}}/{{curr_serv_pack}}/GET"
 
             authorized = project.auth(user, uri)
             if not authorized:
@@ -177,7 +177,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
                 return {"success": False, "message": "Unauthorized access"}, 401
 
             user = identity["user"]
-            uri = "{{name}}/{{current_component.name}}/{{curr_serv_pack}}/POST"
+            uri = "{{name}}/api/{{current_component.name}}/{{curr_serv_pack}}/POST"
 
             authorized = project.auth(user, uri)
             if not authorized:
@@ -261,7 +261,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
                 return {"success": False, "message": "Unauthorized access"}, 401
 
             user = identity["user"]
-            uri = "{{name}}/{{current_component.name}}/{{curr_serv_pack}}/PUT"
+            uri = "{{name}}/api/{{current_component.name}}/{{curr_serv_pack}}/PUT"
 
             authorized = project.auth(user, uri)
             if not authorized:
@@ -345,7 +345,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
                 return {"success": False, "message": "Unauthorized access"}, 401
 
             user = identity["user"]
-            uri = "{{name}}/{{current_component.name}}/{{curr_serv_pack}}/DELETE"
+            uri = "{{name}}/api/{{current_component.name}}/{{curr_serv_pack}}/DELETE"
 
             authorized = project.auth(user, uri)
             if not authorized:

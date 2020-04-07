@@ -255,11 +255,8 @@ class XtsEngine:
                 project_deps = None
                 for curr_cfg in yaml.safe_load_all(config):
                     if curr_cfg is not None:
-                        if all_deps_ok:
-                            # load and init each project component
-                            XtsEngine.__load_component(proj_id, project, curr_cfg, project_deps)
                         if first:
-                            # for firs loading step
+                            # for first loading step
                             first = False
                             project_deps = curr_cfg['dependencies'] if curr_cfg['dependencies'] else []
                             if proj_id in project_deps:
@@ -270,6 +267,9 @@ class XtsEngine:
                             else:
                                 all_deps_ok = True
                             project, project_api = XtsEngine.__initial_load(proj_id, curr_cfg, project_deps)
+                        if all_deps_ok:
+                            # load and init each project component
+                            XtsEngine.__load_component(proj_id, project, curr_cfg, project_deps)
 
                 # project_deps.remove(proj_id)
                 if len(project_deps) != 0:
