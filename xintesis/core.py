@@ -150,7 +150,8 @@ class Project:
         self.__auth = auth_obj
 
     def auth(self, user, uri):
-        # return self.__auth.access(**kwargs)
+        if self.__auth is not None:
+            return self.__auth(user, uri)
         return True
 
     def set_uris(self, component_uri_dict):

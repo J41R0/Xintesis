@@ -74,38 +74,38 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             tk_header = request.headers.get('XSA-API-KEY')
             if tk_header is None:
                 return {"success": False, "message": "Login token required"}, 401
-            # try:
-            #     identity = decode_token(tk_header).get('identity')
-            # except JWTDecodeError:
-            #     return {"success": False, "message": "Incorrect login token"}, 401
-            # except ExpiredSignatureError:
-            #     return {"success": False, "message": "Expired login token"}, 401
-            # if not identity:
-            #     return {"success": False, "message": "Login token required"}, 401
-            # test = decode_token(tk_header)
-            # coincidences = set(identity.keys()).intersection(set(current_request_data.keys()))
-            # autentication_data_ok = True
-            # for curr_key in coincidences:
-            #     if identity[curr_key] != current_request_data[curr_key]:
-            #         autentication_data_ok = False
-            #         break
-            # if not autentication_data_ok:
-            #     return {"success": False, "message": "Unauthorized access"}, 401
+            try:
+                identity = decode_token(tk_header).get('identity')
+            except JWTDecodeError:
+                return {"success": False, "message": "Incorrect login token"}, 401
+            except ExpiredSignatureError:
+                return {"success": False, "message": "Expired login token"}, 401
+            if not identity:
+                return {"success": False, "message": "Login token required"}, 401
+            test = decode_token(tk_header)
+            coincidences = set(identity.keys()).intersection(set(current_request_data.keys()))
+            autentication_data_ok = True
+            for curr_key in coincidences:
+                if identity[curr_key] != current_request_data[curr_key]:
+                    autentication_data_ok = False
+                    break
+            if not autentication_data_ok:
+                return {"success": False, "message": "Unauthorized access"}, 401
 
             user = identity["user"]
             uri = "{{name}}/{{current_component.name}}/{{curr_serv_pack}}/GET"
 
-            auth_response = project.auth(user, uri)
-            if not auth_response.get("success"):
-                return {"success": False, "message": auth_response["message"]}, auth_response.get("code", 418)
-            user = auth_response.get("user")
+            authorized = project.auth(user, uri)
+            if not authorized:
+                return {"success": False, "message": "You have not access to this resource"}, 401
+            identity['uri'] = uri
             {% endif %}{% if current_component.my_services[curr_serv_pack].get["parser"] %}
             input = {{current_component.name}}.my_services["{{curr_serv_pack}}"].get["expect"].parse_args()
             {% else %}input = {{name}}_api.payload{% endif %}
             response = {"success": False, "data": "", "message": ""}
             try:
                 obj_dict = project.get_object('{{current_component.name}}'){% if security and current_component.my_services[curr_serv_pack].get["security"] %}
-                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].get_call(project=project.file_handler, input=input, obj_dict=obj_dict, user=user, uri=uri){% else %}
+                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].get_call(project=project.file_handler, input=input, obj_dict=obj_dict, identity=identity){% else %}
                 call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].get_call(project=project.file_handler, input=input, obj_dict=obj_dict){% endif %}
                 code = 200
                 succ = call[SUCC]
@@ -158,38 +158,38 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             tk_header = request.headers.get('XSA-API-KEY')
             if tk_header is None:
                 return {"success": False, "message": "Login token required"}, 401
-            # try:
-            #     identity = decode_token(tk_header).get('identity')
-            # except JWTDecodeError:
-            #     return {"success": False, "message": "Incorrect login token"}, 401
-            # except ExpiredSignatureError:
-            #     return {"success": False, "message": "Expired login token"}, 401
-            # if not identity:
-            #     return {"success": False, "message": "Login token required"}, 401
-            # test = decode_token(tk_header)
-            # coincidences = set(identity.keys()).intersection(set(current_request_data.keys()))
-            # autentication_data_ok = True
-            # for curr_key in coincidences:
-            #     if identity[curr_key] != current_request_data[curr_key]:
-            #         autentication_data_ok = False
-            #         break
-            # if not autentication_data_ok:
-            #     return {"success": False, "message": "Unauthorized access"}, 401
+            try:
+                identity = decode_token(tk_header).get('identity')
+            except JWTDecodeError:
+                return {"success": False, "message": "Incorrect login token"}, 401
+            except ExpiredSignatureError:
+                return {"success": False, "message": "Expired login token"}, 401
+            if not identity:
+                return {"success": False, "message": "Login token required"}, 401
+            test = decode_token(tk_header)
+            coincidences = set(identity.keys()).intersection(set(current_request_data.keys()))
+            autentication_data_ok = True
+            for curr_key in coincidences:
+                if identity[curr_key] != current_request_data[curr_key]:
+                    autentication_data_ok = False
+                    break
+            if not autentication_data_ok:
+                return {"success": False, "message": "Unauthorized access"}, 401
 
             user = identity["user"]
             uri = "{{name}}/{{current_component.name}}/{{curr_serv_pack}}/POST"
 
-            auth_response = project.auth(user, uri)
-            if not auth_response.get("success"):
-                return {"success": False, "message": auth_response["message"]}, auth_response.get("code", 418)
-            user = auth_response.get("user")
+            authorized = project.auth(user, uri)
+            if not authorized:
+                return {"success": False, "message": "You have not access to this resource"}, 401
+            identity['uri'] = uri
             {% endif %}{% if current_component.my_services[curr_serv_pack].post["parser"] %}
             input = {{current_component.name}}.my_services["{{curr_serv_pack}}"].post["expect"].parse_args()
             {% else %}input = {{name}}_api.payload{% endif %}
             response = {"success": False, "data": "", "message": ""}
             try:
                 obj_dict = project.get_object('{{current_component.name}}'){% if security and current_component.my_services[curr_serv_pack].post["security"] %}
-                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].post_call(project=project.file_handler, input=input, obj_dict=obj_dict, user=user, uri=uri){% else %}
+                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].post_call(project=project.file_handler, input=input, obj_dict=obj_dict, identity=identity){% else %}
                 call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].post_call(project=project.file_handler, input=input, obj_dict=obj_dict){% endif %}
                 code = 201
                 succ = call[SUCC]
@@ -242,38 +242,38 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             tk_header = request.headers.get('XSA-API-KEY')
             if tk_header is None:
                 return {"success": False, "message": "Login token required"}, 401
-            # try:
-            #     identity = decode_token(tk_header).get('identity')
-            # except JWTDecodeError:
-            #     return {"success": False, "message": "Incorrect login token"}, 401
-            # except ExpiredSignatureError:
-            #     return {"success": False, "message": "Expired login token"}, 401
-            # if not identity:
-            #     return {"success": False, "message": "Login token required"}, 401
-            # test = decode_token(tk_header)
-            # coincidences = set(identity.keys()).intersection(set(current_request_data.keys()))
-            # autentication_data_ok = True
-            # for curr_key in coincidences:
-            #     if identity[curr_key] != current_request_data[curr_key]:
-            #         autentication_data_ok = False
-            #         break
-            # if not autentication_data_ok:
-            #     return {"success": False, "message": "Unauthorized access"}, 401
+            try:
+                identity = decode_token(tk_header).get('identity')
+            except JWTDecodeError:
+                return {"success": False, "message": "Incorrect login token"}, 401
+            except ExpiredSignatureError:
+                return {"success": False, "message": "Expired login token"}, 401
+            if not identity:
+                return {"success": False, "message": "Login token required"}, 401
+            test = decode_token(tk_header)
+            coincidences = set(identity.keys()).intersection(set(current_request_data.keys()))
+            autentication_data_ok = True
+            for curr_key in coincidences:
+                if identity[curr_key] != current_request_data[curr_key]:
+                    autentication_data_ok = False
+                    break
+            if not autentication_data_ok:
+                return {"success": False, "message": "Unauthorized access"}, 401
 
             user = identity["user"]
             uri = "{{name}}/{{current_component.name}}/{{curr_serv_pack}}/PUT"
 
-            auth_response = project.auth(user, uri)
-            if not auth_response.get("success"):
-                return {"success": False, "message": auth_response["message"]}, auth_response.get("code", 418)
-            user = auth_response.get("user")
+            authorized = project.auth(user, uri)
+            if not authorized:
+                return {"success": False, "message": "You have not access to this resource"}, 401
+            identity['uri'] = uri
             {% endif %}{% if current_component.my_services[curr_serv_pack].put["parser"] %}
             input = {{current_component.name}}.my_services["{{curr_serv_pack}}"].put["expect"].parse_args()
             {% else %}input = {{name}}_api.payload{% endif %}
             response = {"success": False, "data": "", "message": ""}
             try:
                 obj_dict = project.get_object('{{current_component.name}}'){% if security and current_component.my_services[curr_serv_pack].put["security"] %}
-                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].put_call(project=project.file_handler, input=input, obj_dict=obj_dict, user=user, uri=uri){% else %}
+                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].put_call(project=project.file_handler, input=input, obj_dict=obj_dict, identity=identity){% else %}
                 call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].put_call(project=project.file_handler, input=input, obj_dict=obj_dict){% endif %}
                 code = 201
                 succ = call[SUCC]
@@ -326,31 +326,31 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             tk_header = request.headers.get('XSA-API-KEY')
             if tk_header is None:
                 return {"success": False, "message": "Login token required"}, 401
-            # try:
-            #     identity = decode_token(tk_header).get('identity')
-            # except JWTDecodeError:
-            #     return {"success": False, "message": "Incorrect login token"}, 401
-            # except ExpiredSignatureError:
-            #     return {"success": False, "message": "Expired login token"}, 401
-            # if not identity:
-            #     return {"success": False, "message": "Login token required"}, 401
-            # test = decode_token(tk_header)
-            # coincidences = set(identity.keys()).intersection(set(current_request_data.keys()))
-            # autentication_data_ok = True
-            # for curr_key in coincidences:
-            #     if identity[curr_key] != current_request_data[curr_key]:
-            #         autentication_data_ok = False
-            #         break
-            # if not autentication_data_ok:
-            #     return {"success": False, "message": "Unauthorized access"}, 401
+            try:
+                identity = decode_token(tk_header).get('identity')
+            except JWTDecodeError:
+                return {"success": False, "message": "Incorrect login token"}, 401
+            except ExpiredSignatureError:
+                return {"success": False, "message": "Expired login token"}, 401
+            if not identity:
+                return {"success": False, "message": "Login token required"}, 401
+            test = decode_token(tk_header)
+            coincidences = set(identity.keys()).intersection(set(current_request_data.keys()))
+            autentication_data_ok = True
+            for curr_key in coincidences:
+                if identity[curr_key] != current_request_data[curr_key]:
+                    autentication_data_ok = False
+                    break
+            if not autentication_data_ok:
+                return {"success": False, "message": "Unauthorized access"}, 401
 
             user = identity["user"]
             uri = "{{name}}/{{current_component.name}}/{{curr_serv_pack}}/DELETE"
 
-            auth_response = project.auth(user, uri)
-            if not auth_response.get("success"):
-                return {"success": False, "message": auth_response["message"]}, auth_response.get("code", 418)
-            user = auth_response.get("user")
+            authorized = project.auth(user, uri)
+            if not authorized:
+                return {"success": False, "message": "You have not access to this resource"}, 401
+            identity['uri'] = uri
             {% endif %}{% if current_component.my_services[curr_serv_pack].delete["parser"] %}
             input = {{current_component.name}}.my_services["{{curr_serv_pack}}"].delete["expect"].parse_args()
             {% else %}input = {{name}}_api.payload{% endif %}
@@ -358,7 +358,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             try:
                 obj_dict = project.get_object('{{current_component.name}}')
                 obj_dict = project.get_object('{{current_component.name}}'){% if security and current_component.my_services[curr_serv_pack].delete["security"] %}
-                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].delete_call(project=project.file_handler, input=input, obj_dict=obj_dict, user=user, uri=uri){% else %}
+                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].delete_call(project=project.file_handler, input=input, obj_dict=obj_dict, identity=identity){% else %}
                 call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].delete_call(project=project.file_handler, input=input, obj_dict=obj_dict){% endif %}
                 code = 204
                 succ = call[SUCC]
