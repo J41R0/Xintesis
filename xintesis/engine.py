@@ -135,10 +135,14 @@ class XtsEngine:
                 try:
                     obj_dict = init_obj.init_objects(pack_config)
                     if 'use_security' in curr_cfg.keys() and curr_cfg['use_security']:
-                        # handle security object
+                        # load authorization model
                         try:
                             project.set_object(component_name, obj_dict)
-                            project.set_auth(obj_dict[init_obj.MODEL])
+                            try:
+                                auth_id = init_obj.AUTH
+                                project.set_auth(obj_dict[auth_id])
+                            except Exception as err:
+                                logging.warning("No authorization model defined in project " + project.name)
                         except Exception as err:
                             raise Exception("Error " + str(err) + " loading security package")
                     else:

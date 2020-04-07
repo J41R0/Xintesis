@@ -146,8 +146,8 @@ class Project:
         except:
             logging.warning("Cannot init project " + self.name + " objects due error importing 'init_objects' function")
 
-    def set_auth(self, auth_model_obj):
-        self.__auth = auth_model_obj
+    def set_auth(self, auth_obj):
+        self.__auth = auth_obj
 
     def auth(self, user, uri):
         # return self.__auth.access(**kwargs)
