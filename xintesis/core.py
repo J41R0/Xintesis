@@ -152,7 +152,7 @@ class Project:
     def auth(self, user, uri):
         if self.__auth is not None:
             return self.__auth(user, uri)
-        return True
+        return False
 
     def set_uris(self, component_uri_dict):
         for key, uri_list in component_uri_dict.items():
