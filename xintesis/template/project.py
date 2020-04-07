@@ -58,7 +58,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
         @{{name}}_api.response(403, 'Forbidden'){% endif %}
         def get(self):
             \"\"\"{{current_component.my_services[curr_serv_pack].get["doc"]}}\"\"\"
-            {% if security and current_component.my_services[curr_serv_pack].get["security"] %}
+            {% if security %}
             current_request_data = {
                 "Host": request.headers['Host'] if 'Host' in request.headers else None,
                 "User-Agent": request.headers['User-Agent'] if 'User-Agent' in request.headers else None,
@@ -92,11 +92,10 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             # if not autentication_data_ok:
             #     return {"success": False, "message": "Unauthorized access"}, 401
 
-            # user = identity["user"]
-            # password = identity["password"]
+            user = identity["user"]
             uri = "{{name}}/{{current_component.name}}/{{curr_serv_pack}}/GET"
 
-            auth_response = project.auth(credentials_token=tk_header)
+            auth_response = project.auth(user, uri)
             if not auth_response.get("success"):
                 return {"success": False, "message": auth_response["message"]}, auth_response.get("code", 418)
             user = auth_response.get("user")
@@ -143,7 +142,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
         @{{name}}_api.response(403, 'Forbidden'){% endif %}
         def post(self):
             \"\"\"{{current_component.my_services[curr_serv_pack].post["doc"]}}\"\"\"
-            {% if security and current_component.my_services[curr_serv_pack].post["security"] %}
+            {% if security %}
             current_request_data = {
                 "Host": request.headers['Host'] if 'Host' in request.headers else None,
                 "User-Agent": request.headers['User-Agent'] if 'User-Agent' in request.headers else None,
@@ -177,11 +176,10 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             # if not autentication_data_ok:
             #     return {"success": False, "message": "Unauthorized access"}, 401
 
-            # user = identity["user"]
-            # password = identity["password"]
+            user = identity["user"]
             uri = "{{name}}/{{current_component.name}}/{{curr_serv_pack}}/POST"
 
-            auth_response = project.auth(credentials_token=tk_header)
+            auth_response = project.auth(user, uri)
             if not auth_response.get("success"):
                 return {"success": False, "message": auth_response["message"]}, auth_response.get("code", 418)
             user = auth_response.get("user")
@@ -228,7 +226,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
         @{{name}}_api.response(403, 'Forbidden'){% endif %}
         def put(self):
             \"\"\"{{current_component.my_services[curr_serv_pack].put["doc"]}}\"\"\"
-            {% if security and current_component.my_services[curr_serv_pack].put["security"] %}
+            {% if security %}
             current_request_data = {
                 "Host": request.headers['Host'] if 'Host' in request.headers else None,
                 "User-Agent": request.headers['User-Agent'] if 'User-Agent' in request.headers else None,
@@ -262,11 +260,10 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             # if not autentication_data_ok:
             #     return {"success": False, "message": "Unauthorized access"}, 401
 
-            # user = identity["user"]
-            # password = identity["password"]
+            user = identity["user"]
             uri = "{{name}}/{{current_component.name}}/{{curr_serv_pack}}/PUT"
 
-            auth_response = project.auth(credentials_token=tk_header)
+            auth_response = project.auth(user, uri)
             if not auth_response.get("success"):
                 return {"success": False, "message": auth_response["message"]}, auth_response.get("code", 418)
             user = auth_response.get("user")
@@ -313,7 +310,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
         @{{name}}_api.response(403, 'Forbidden'){% endif %}
         def delete(self):
             \"\"\"{{current_component.my_services[curr_serv_pack].delete["doc"]}}\"\"\"
-            {% if security and current_component.my_services[curr_serv_pack].delete["security"] %}
+            {% if security %}
             current_request_data = {
                 "Host": request.headers['Host'] if 'Host' in request.headers else None,
                 "User-Agent": request.headers['User-Agent'] if 'User-Agent' in request.headers else None,
@@ -347,11 +344,10 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             # if not autentication_data_ok:
             #     return {"success": False, "message": "Unauthorized access"}, 401
 
-            # user = identity["user"]
-            # password = identity["password"]
+            user = identity["user"]
             uri = "{{name}}/{{current_component.name}}/{{curr_serv_pack}}/DELETE"
 
-            auth_response = project.auth(credentials_token=tk_header)
+            auth_response = project.auth(user, uri)
             if not auth_response.get("success"):
                 return {"success": False, "message": auth_response["message"]}, auth_response.get("code", 418)
             user = auth_response.get("user")

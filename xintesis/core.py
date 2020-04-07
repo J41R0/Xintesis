@@ -67,7 +67,7 @@ class Project:
     def set_auth(self, auth_model_obj):
         self.__auth = auth_model_obj
 
-    def auth(self, user, password, uri):
+    def auth(self, user, uri):
         # return self.__auth.access(**kwargs)
         return True
 
