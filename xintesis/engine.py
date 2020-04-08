@@ -131,7 +131,7 @@ class XtsEngine:
             else:
                 pack_config = curr_cfg['config']
                 # init all package objects for project
-                init_obj = import_module('packages.' + curr_cfg['name'])
+                init_obj = import_module('packages.' + component_name)
                 try:
                     obj_dict = init_obj.init_objects(pack_config)
                     if 'use_security' in curr_cfg.keys() and curr_cfg['use_security']:
@@ -152,7 +152,7 @@ class XtsEngine:
                                     + "' in project '" + project.name + "' due: " + str(err))
 
         except Exception as err:
-            raise Exception("Error " + str(err) + " loading package " + curr_cfg['name'])
+            raise Exception("Error " + str(err) + " loading package " + component_name)
 
     @staticmethod
     def __initial_load(proj_id, curr_cfg, project_deps):
@@ -255,6 +255,9 @@ class XtsEngine:
                 project_deps = None
                 for curr_cfg in yaml.safe_load_all(config):
                     if curr_cfg is not None:
+                        if all_deps_ok:
+                            # load and init each project component
+                            XtsEngine.__load_component(proj_id, project, curr_cfg, project_deps)
                         if first:
                             # for first loading step
                             first = False
@@ -267,9 +270,6 @@ class XtsEngine:
                             else:
                                 all_deps_ok = True
                             project, project_api = XtsEngine.__initial_load(proj_id, curr_cfg, project_deps)
-                        if all_deps_ok:
-                            # load and init each project component
-                            XtsEngine.__load_component(proj_id, project, curr_cfg, project_deps)
 
                 # project_deps.remove(proj_id)
                 if len(project_deps) != 0:
