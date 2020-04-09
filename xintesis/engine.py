@@ -94,7 +94,7 @@ class XtsEngine:
             port = manager.config_get("server", "port")
             # register each project API
             for project in projects_dict.keys():
-                logging.info("Running endpoint at: " + host + ':' + port + '/' + str(project) + '/')
+                logging.info("Running API endpoint on: " + host + ':' + port + '/' + str(project) + '/api')
                 app.register_blueprint(projects_dict[project][API])
                 # save ref to API blue print
                 # manager.set_singleton(projects_dict[project][API], name=project + "_API")
@@ -198,7 +198,7 @@ class XtsEngine:
         # init project data
         XtsEngine.__init_project_data(proj_id)
         hide_api = False
-        if "mode" in curr_cfg.keys() and curr_cfg["mode"] == "release":
+        if "mode" in curr_cfg.keys() and curr_cfg["mode"] == "production":
             hide_api = True
         # gen project source
         src = gen_project_src(proj_name, proj_id, hide_api, use_security, serv_pack_list, proj_desc)

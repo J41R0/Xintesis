@@ -5,8 +5,8 @@ from jinja2 import Environment
 project_template = """
 # default imports
 from flask import Blueprint, request, send_file
-from flask_restplus import Api, Resource
-from flask_jwt_extended import jwt_optional, decode_token
+from flask_restplus import Api, Resource, reqparse
+from flask_jwt_extended import jwt_optional, jwt_required, decode_token, create_access_token
 from jwt.exceptions import DecodeError as JWTDecodeError, ExpiredSignatureError
 
 from xintesis import Project, ServicePack
@@ -24,13 +24,129 @@ project_api = Blueprint('{{name}}', __name__, url_prefix='/{{name}}/api')
 {{name}}_api = Api(project_api, title='{{show_name}} Project', description='{{description}}', authorizations=authorizations)
 
 
-{% if show_api %}
+def login_expect():
+    data = reqparse.RequestParser()
+    data.add_argument('username',
+                      required=True,
+                      type=str,
+                      location='form',
+                      help='User id')
+                      
+    data.add_argument('password',
+                      required=True,
+                      type=str,
+                      location='form',
+                      help='Current password')
+    return data
+        
+{% if hide_api and security %}
 @{{name}}_api.default_namespace.hide{% endif %}
-@{{name}}_api.default_namespace.route('/logs')
-class Defalut(Resource):
+@{{name}}_api.default_namespace.route('/login')
+class Login(Resource):
+    expect = login_expect()
+    
+    @{{name}}_api.expect(expect)
+    def post(self):
+        \"\"\"Login user\"\"\"
+        my_input = self.expect.parse_args()
+        identity_data = dict(request.headers)
+        identity_data["username"] = my_input['username']
+        identity_data["password"] = my_input['password']
+        token = create_access_token(identity=identity_data)
+        response = {"user_token":token}
+        return response, 200
+        
+{% if hide_api and security %}
+@{{name}}_api.default_namespace.hide{% endif %}
+@{{name}}_api.default_namespace.route('/refresh')
+class Refresh(Resource):
+    @jwt_optional
+    @{{name}}_api.doc(security='api_key')
+    @{{name}}_api.response(200, 'Success')
+    @{{name}}_api.response(401, 'Unauthorized')
+    @{{name}}_api.response(403, 'Forbidden')
     def get(self):
-        \"\"\"Logged data\"\"\"
-        return "Not implemented", 200
+        \"\"\"Refresh user token\"\"\"
+        current_request_data = {
+                "Host": request.headers['Host'] if 'Host' in request.headers else None,
+                "User-Agent": request.headers['User-Agent'] if 'User-Agent' in request.headers else None,
+                "Accept": request.headers['Accept'] if 'Accept' in request.headers else None,
+                # "Accept-Language": request.headers[
+                #    'Accept-Language'] if 'Accept-Language' in request.headers else None,
+                # "Accept-Encoding": request.headers[
+                #    'Accept-Encoding'] if 'Accept-Encoding' in request.headers else None,
+                # "Referer": request.headers['Referer'] if 'Referer' in request.headers else None,
+                # "Origin": request.headers['Origin'] if 'Origin' in request.headers else None,
+                # "Connection": request.headers['Connection'] if 'Connection' in request.headers else None
+            }
+        tk_header = request.headers.get('XSA-API-KEY')
+        if tk_header is None:
+            return {"success": False, "message": "Login token required"}, 401
+        try:
+            identity_data = decode_token(tk_header).get('identity')
+        except JWTDecodeError:
+            return {"success": False, "message": "Incorrect login token"}, 401
+        except ExpiredSignatureError:
+            return {"success": False, "message": "Expired login token"}, 401
+        if not identity_data:
+            return {"success": False, "message": "Login token required"}, 401
+        
+        coincidences = set(identity_data.keys()).intersection(set(current_request_data.keys()))
+        autentication_data_ok = True
+        for curr_key in coincidences:
+            if identity_data[curr_key] != current_request_data[curr_key]:
+                autentication_data_ok = False
+                break
+        if not autentication_data_ok:
+            return {"success": False, "message": "Unauthorized access"}, 401
+        token = create_access_token(identity=identity_data)
+        response = {"user_token":token}
+        return response, 200
+    
+{% if hide_api and security %}
+@{{name}}_api.default_namespace.hide{% endif %}
+@{{name}}_api.default_namespace.route('/logout')
+class Logout(Resource):
+    @jwt_optional
+    @{{name}}_api.doc(security='api_key')
+    @{{name}}_api.response(200, 'Success')
+    @{{name}}_api.response(401, 'Unauthorized')
+    @{{name}}_api.response(403, 'Forbidden')
+    def get(self):
+        \"\"\"Logout user\"\"\"
+        current_request_data = {
+                "Host": request.headers['Host'] if 'Host' in request.headers else None,
+                "User-Agent": request.headers['User-Agent'] if 'User-Agent' in request.headers else None,
+                "Accept": request.headers['Accept'] if 'Accept' in request.headers else None,
+                # "Accept-Language": request.headers[
+                #    'Accept-Language'] if 'Accept-Language' in request.headers else None,
+                # "Accept-Encoding": request.headers[
+                #    'Accept-Encoding'] if 'Accept-Encoding' in request.headers else None,
+                # "Referer": request.headers['Referer'] if 'Referer' in request.headers else None,
+                # "Origin": request.headers['Origin'] if 'Origin' in request.headers else None,
+                # "Connection": request.headers['Connection'] if 'Connection' in request.headers else None
+            }
+        tk_header = request.headers.get('XSA-API-KEY')
+        if tk_header is None:
+            return {"success": False, "message": "Login token required"}, 401
+        try:
+            identity = decode_token(tk_header).get('identity')
+        except JWTDecodeError:
+            return {"success": False, "message": "Incorrect login token"}, 401
+        except ExpiredSignatureError:
+            return {"success": False, "message": "Expired login token"}, 401
+        if not identity:
+            return {"success": False, "message": "Login token required"}, 401
+        
+        coincidences = set(identity.keys()).intersection(set(current_request_data.keys()))
+        autentication_data_ok = True
+        for curr_key in coincidences:
+            if identity[curr_key] != current_request_data[curr_key]:
+                autentication_data_ok = False
+                break
+        if not autentication_data_ok:
+            return {"success": False, "message": "Unauthorized access"}, 401
+        return identity, 200
 
 {% for current_component in components %}
 # Package {{current_component.name}} {% if current_component.is_service %}
@@ -40,7 +156,7 @@ from packages.{{current_component.name}}.services import service_pack as {{curre
 {{current_component.name}}_ns = {{name}}_api.namespace('{{current_component.name}}', description='{{current_component.desc}}')
 
 
-class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in current_component.my_services.keys() %}{% if show_api %}
+class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in current_component.my_services.keys() %}{% if hide_api %}
     @{{current_component.name}}_ns.hide{% endif %}
     @{{current_component.name}}_ns.route('/{{curr_serv_pack}}')
     @{{current_component.name}}_ns.header('XSA-API-KEY', 'JWT TOKEN', required=True)
@@ -82,7 +198,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
                 return {"success": False, "message": "Expired login token"}, 401
             if not identity:
                 return {"success": False, "message": "Login token required"}, 401
-            test = decode_token(tk_header)
+            
             coincidences = set(identity.keys()).intersection(set(current_request_data.keys()))
             autentication_data_ok = True
             for curr_key in coincidences:
@@ -166,7 +282,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
                 return {"success": False, "message": "Expired login token"}, 401
             if not identity:
                 return {"success": False, "message": "Login token required"}, 401
-            test = decode_token(tk_header)
+            
             coincidences = set(identity.keys()).intersection(set(current_request_data.keys()))
             autentication_data_ok = True
             for curr_key in coincidences:
@@ -250,7 +366,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
                 return {"success": False, "message": "Expired login token"}, 401
             if not identity:
                 return {"success": False, "message": "Login token required"}, 401
-            test = decode_token(tk_header)
+            
             coincidences = set(identity.keys()).intersection(set(current_request_data.keys()))
             autentication_data_ok = True
             for curr_key in coincidences:
@@ -334,7 +450,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
                 return {"success": False, "message": "Expired login token"}, 401
             if not identity:
                 return {"success": False, "message": "Login token required"}, 401
-            test = decode_token(tk_header)
+            
             coincidences = set(identity.keys()).intersection(set(current_request_data.keys()))
             autentication_data_ok = True
             for curr_key in coincidences:
@@ -385,7 +501,7 @@ def gen_project_src(name, id, hide_api, use_security, components_data_list, desc
     kwargs = dict()
     kwargs["show_name"] = name
     kwargs["name"] = id
-    kwargs["show_api"] = hide_api
+    kwargs["hide_api"] = hide_api
     # define condition to activate security
     kwargs["security"] = use_security
     # each component is a controller

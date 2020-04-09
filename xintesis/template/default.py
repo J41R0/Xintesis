@@ -65,11 +65,11 @@ datefmt = %%Y-%%m-%%d %%H:%%M:%%S
 
 proj_cfg = """---
 project name: Default
-security:
-  use_security: False
 description: >
   Default sample project. Change me !!!
-mode: debug
+mode: development
+security:
+  use_security: False
 logging:
   level: 1
   format: '%%(asctime)s - %%(levelname)s - %%(filename)s - %%(lineno)d - %%(message)s'
