@@ -6,7 +6,7 @@ project_template = """
 # default imports
 from flask import Blueprint, request, send_file
 from flask_restplus import Api, Resource, reqparse
-from flask_jwt_extended import jwt_optional, jwt_required, decode_token, create_access_token
+from flask_jwt_extended import jwt_optional, jwt_required, decode_token, create_access_token, create_refresh_token
 from jwt.exceptions import DecodeError as JWTDecodeError, ExpiredSignatureError
 
 from xintesis import Project, ServicePack
@@ -22,6 +22,42 @@ project = Project("{{name}}")
 authorizations = {'api_key': {'type': 'apiKey', 'in': 'header', 'name': 'XSA-API-KEY'}}
 project_api = Blueprint('{{name}}', __name__, url_prefix='/{{name}}/api')
 {{name}}_api = Api(project_api, title='{{show_name}} Project', description='{{description}}', authorizations=authorizations)
+
+
+def get_identity():
+    current_request_data = {
+        "Host": request.headers['Host'] if 'Host' in request.headers else None,
+        "User-Agent": request.headers['User-Agent'] if 'User-Agent' in request.headers else None,
+        "Accept": request.headers['Accept'] if 'Accept' in request.headers else None,
+        # "Accept-Language": request.headers[
+        #    'Accept-Language'] if 'Accept-Language' in request.headers else None,
+        # "Accept-Encoding": request.headers[
+        #    'Accept-Encoding'] if 'Accept-Encoding' in request.headers else None,
+        # "Referer": request.headers['Referer'] if 'Referer' in request.headers else None,
+        # "Origin": request.headers['Origin'] if 'Origin' in request.headers else None,
+        # "Connection": request.headers['Connection'] if 'Connection' in request.headers else None
+    }
+    tk_header = request.headers.get('XSA-API-KEY')
+    if tk_header is None:
+        return {"success": False, "message": "Login token required"}, 401
+    try:
+        identity_data = decode_token(tk_header).get('identity')
+    except JWTDecodeError:
+        return {"success": False, "message": "Incorrect login token"}, 401
+    except ExpiredSignatureError:
+        return {"success": False, "message": "Expired login token"}, 401
+    if not identity_data:
+        return {"success": False, "message": "Login token required"}, 401
+
+    coincidences = set(identity_data.keys()).intersection(set(current_request_data.keys()))
+    autentication_data_ok = True
+    for curr_key in coincidences:
+        if identity_data[curr_key] != current_request_data[curr_key]:
+            autentication_data_ok = False
+            break
+    if not autentication_data_ok:
+        return {"success": False, "message": "Unauthorized access"}, 401
+    return {"success": True, "identity": identity_data}, 200
 
 
 def login_expect():
@@ -51,56 +87,28 @@ class Login(Resource):
         my_input = self.expect.parse_args()
         identity_data = dict(request.headers)
         identity_data["username"] = my_input['username']
-        identity_data["password"] = my_input['password']
-        token = create_access_token(identity=identity_data)
-        response = {"user_token":token}
+        ac_token = create_access_token(identity=identity_data)
+        rf_token = create_refresh_token(identity=identity_data)
+        response = {"access_token":ac_token, "refresh_token":rf_token}
         return response, 200
         
 {% if hide_api and security %}
 @{{name}}_api.default_namespace.hide{% endif %}
 @{{name}}_api.default_namespace.route('/refresh')
 class Refresh(Resource):
-    @jwt_optional
+    @jwt_refresh_token_required
     @{{name}}_api.doc(security='api_key')
     @{{name}}_api.response(200, 'Success')
     @{{name}}_api.response(401, 'Unauthorized')
     @{{name}}_api.response(403, 'Forbidden')
     def get(self):
         \"\"\"Refresh user token\"\"\"
-        current_request_data = {
-                "Host": request.headers['Host'] if 'Host' in request.headers else None,
-                "User-Agent": request.headers['User-Agent'] if 'User-Agent' in request.headers else None,
-                "Accept": request.headers['Accept'] if 'Accept' in request.headers else None,
-                # "Accept-Language": request.headers[
-                #    'Accept-Language'] if 'Accept-Language' in request.headers else None,
-                # "Accept-Encoding": request.headers[
-                #    'Accept-Encoding'] if 'Accept-Encoding' in request.headers else None,
-                # "Referer": request.headers['Referer'] if 'Referer' in request.headers else None,
-                # "Origin": request.headers['Origin'] if 'Origin' in request.headers else None,
-                # "Connection": request.headers['Connection'] if 'Connection' in request.headers else None
-            }
-        tk_header = request.headers.get('XSA-API-KEY')
-        if tk_header is None:
-            return {"success": False, "message": "Login token required"}, 401
-        try:
-            identity_data = decode_token(tk_header).get('identity')
-        except JWTDecodeError:
-            return {"success": False, "message": "Incorrect login token"}, 401
-        except ExpiredSignatureError:
-            return {"success": False, "message": "Expired login token"}, 401
-        if not identity_data:
-            return {"success": False, "message": "Login token required"}, 401
-        
-        coincidences = set(identity_data.keys()).intersection(set(current_request_data.keys()))
-        autentication_data_ok = True
-        for curr_key in coincidences:
-            if identity_data[curr_key] != current_request_data[curr_key]:
-                autentication_data_ok = False
-                break
-        if not autentication_data_ok:
-            return {"success": False, "message": "Unauthorized access"}, 401
+        response, code = get_identity()
+        if code != 200:
+            return response, code
+        identity_data = response["identity"] 
         token = create_access_token(identity=identity_data)
-        response = {"user_token":token}
+        response = {"access_token":token}
         return response, 200
     
 {% if hide_api and security %}
@@ -114,39 +122,11 @@ class Logout(Resource):
     @{{name}}_api.response(403, 'Forbidden')
     def get(self):
         \"\"\"Logout user\"\"\"
-        current_request_data = {
-                "Host": request.headers['Host'] if 'Host' in request.headers else None,
-                "User-Agent": request.headers['User-Agent'] if 'User-Agent' in request.headers else None,
-                "Accept": request.headers['Accept'] if 'Accept' in request.headers else None,
-                # "Accept-Language": request.headers[
-                #    'Accept-Language'] if 'Accept-Language' in request.headers else None,
-                # "Accept-Encoding": request.headers[
-                #    'Accept-Encoding'] if 'Accept-Encoding' in request.headers else None,
-                # "Referer": request.headers['Referer'] if 'Referer' in request.headers else None,
-                # "Origin": request.headers['Origin'] if 'Origin' in request.headers else None,
-                # "Connection": request.headers['Connection'] if 'Connection' in request.headers else None
-            }
-        tk_header = request.headers.get('XSA-API-KEY')
-        if tk_header is None:
-            return {"success": False, "message": "Login token required"}, 401
-        try:
-            identity = decode_token(tk_header).get('identity')
-        except JWTDecodeError:
-            return {"success": False, "message": "Incorrect login token"}, 401
-        except ExpiredSignatureError:
-            return {"success": False, "message": "Expired login token"}, 401
-        if not identity:
-            return {"success": False, "message": "Login token required"}, 401
-        
-        coincidences = set(identity.keys()).intersection(set(current_request_data.keys()))
-        autentication_data_ok = True
-        for curr_key in coincidences:
-            if identity[curr_key] != current_request_data[curr_key]:
-                autentication_data_ok = False
-                break
-        if not autentication_data_ok:
-            return {"success": False, "message": "Unauthorized access"}, 401
-        return identity, 200
+        response, code = get_identity()
+        if code != 200:
+            return response, code
+        identity_data = response["identity"]
+        return identity_data, 200
 
 {% for current_component in components %}
 # Package {{current_component.name}} {% if current_component.is_service %}
@@ -175,38 +155,10 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
         def get(self):
             \"\"\"{{current_component.my_services[curr_serv_pack].get["doc"]}}\"\"\"
             {% if security %}
-            current_request_data = {
-                "Host": request.headers['Host'] if 'Host' in request.headers else None,
-                "User-Agent": request.headers['User-Agent'] if 'User-Agent' in request.headers else None,
-                "Accept": request.headers['Accept'] if 'Accept' in request.headers else None,
-                # "Accept-Language": request.headers[
-                #    'Accept-Language'] if 'Accept-Language' in request.headers else None,
-                # "Accept-Encoding": request.headers[
-                #    'Accept-Encoding'] if 'Accept-Encoding' in request.headers else None,
-                # "Referer": request.headers['Referer'] if 'Referer' in request.headers else None,
-                # "Origin": request.headers['Origin'] if 'Origin' in request.headers else None,
-                # "Connection": request.headers['Connection'] if 'Connection' in request.headers else None
-            }
-            tk_header = request.headers.get('XSA-API-KEY')
-            if tk_header is None:
-                return {"success": False, "message": "Login token required"}, 401
-            try:
-                identity = decode_token(tk_header).get('identity')
-            except JWTDecodeError:
-                return {"success": False, "message": "Incorrect login token"}, 401
-            except ExpiredSignatureError:
-                return {"success": False, "message": "Expired login token"}, 401
-            if not identity:
-                return {"success": False, "message": "Login token required"}, 401
-            
-            coincidences = set(identity.keys()).intersection(set(current_request_data.keys()))
-            autentication_data_ok = True
-            for curr_key in coincidences:
-                if identity[curr_key] != current_request_data[curr_key]:
-                    autentication_data_ok = False
-                    break
-            if not autentication_data_ok:
-                return {"success": False, "message": "Unauthorized access"}, 401
+            response, code = get_identity()
+            if code != 200:
+                return response, code
+            identity = response["identity"]
 
             user = identity["user"]
             uri = "{{name}}/api/{{current_component.name}}/{{curr_serv_pack}}/GET"
@@ -259,38 +211,10 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
         def post(self):
             \"\"\"{{current_component.my_services[curr_serv_pack].post["doc"]}}\"\"\"
             {% if security %}
-            current_request_data = {
-                "Host": request.headers['Host'] if 'Host' in request.headers else None,
-                "User-Agent": request.headers['User-Agent'] if 'User-Agent' in request.headers else None,
-                "Accept": request.headers['Accept'] if 'Accept' in request.headers else None,
-                # "Accept-Language": request.headers[
-                #    'Accept-Language'] if 'Accept-Language' in request.headers else None,
-                # "Accept-Encoding": request.headers[
-                #    'Accept-Encoding'] if 'Accept-Encoding' in request.headers else None,
-                # "Referer": request.headers['Referer'] if 'Referer' in request.headers else None,
-                # "Origin": request.headers['Origin'] if 'Origin' in request.headers else None,
-                # "Connection": request.headers['Connection'] if 'Connection' in request.headers else None
-            }
-            tk_header = request.headers.get('XSA-API-KEY')
-            if tk_header is None:
-                return {"success": False, "message": "Login token required"}, 401
-            try:
-                identity = decode_token(tk_header).get('identity')
-            except JWTDecodeError:
-                return {"success": False, "message": "Incorrect login token"}, 401
-            except ExpiredSignatureError:
-                return {"success": False, "message": "Expired login token"}, 401
-            if not identity:
-                return {"success": False, "message": "Login token required"}, 401
-            
-            coincidences = set(identity.keys()).intersection(set(current_request_data.keys()))
-            autentication_data_ok = True
-            for curr_key in coincidences:
-                if identity[curr_key] != current_request_data[curr_key]:
-                    autentication_data_ok = False
-                    break
-            if not autentication_data_ok:
-                return {"success": False, "message": "Unauthorized access"}, 401
+            response, code = get_identity()
+            if code != 200:
+                return response, code
+            identity = response["identity"]
 
             user = identity["user"]
             uri = "{{name}}/api/{{current_component.name}}/{{curr_serv_pack}}/POST"
@@ -343,38 +267,10 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
         def put(self):
             \"\"\"{{current_component.my_services[curr_serv_pack].put["doc"]}}\"\"\"
             {% if security %}
-            current_request_data = {
-                "Host": request.headers['Host'] if 'Host' in request.headers else None,
-                "User-Agent": request.headers['User-Agent'] if 'User-Agent' in request.headers else None,
-                "Accept": request.headers['Accept'] if 'Accept' in request.headers else None,
-                # "Accept-Language": request.headers[
-                #    'Accept-Language'] if 'Accept-Language' in request.headers else None,
-                # "Accept-Encoding": request.headers[
-                #    'Accept-Encoding'] if 'Accept-Encoding' in request.headers else None,
-                # "Referer": request.headers['Referer'] if 'Referer' in request.headers else None,
-                # "Origin": request.headers['Origin'] if 'Origin' in request.headers else None,
-                # "Connection": request.headers['Connection'] if 'Connection' in request.headers else None
-            }
-            tk_header = request.headers.get('XSA-API-KEY')
-            if tk_header is None:
-                return {"success": False, "message": "Login token required"}, 401
-            try:
-                identity = decode_token(tk_header).get('identity')
-            except JWTDecodeError:
-                return {"success": False, "message": "Incorrect login token"}, 401
-            except ExpiredSignatureError:
-                return {"success": False, "message": "Expired login token"}, 401
-            if not identity:
-                return {"success": False, "message": "Login token required"}, 401
-            
-            coincidences = set(identity.keys()).intersection(set(current_request_data.keys()))
-            autentication_data_ok = True
-            for curr_key in coincidences:
-                if identity[curr_key] != current_request_data[curr_key]:
-                    autentication_data_ok = False
-                    break
-            if not autentication_data_ok:
-                return {"success": False, "message": "Unauthorized access"}, 401
+            response, code = get_identity()
+            if code != 200:
+                return response, code
+            identity = response["identity"]
 
             user = identity["user"]
             uri = "{{name}}/api/{{current_component.name}}/{{curr_serv_pack}}/PUT"
@@ -427,38 +323,10 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
         def delete(self):
             \"\"\"{{current_component.my_services[curr_serv_pack].delete["doc"]}}\"\"\"
             {% if security %}
-            current_request_data = {
-                "Host": request.headers['Host'] if 'Host' in request.headers else None,
-                "User-Agent": request.headers['User-Agent'] if 'User-Agent' in request.headers else None,
-                "Accept": request.headers['Accept'] if 'Accept' in request.headers else None,
-                # "Accept-Language": request.headers[
-                #    'Accept-Language'] if 'Accept-Language' in request.headers else None,
-                # "Accept-Encoding": request.headers[
-                #    'Accept-Encoding'] if 'Accept-Encoding' in request.headers else None,
-                # "Referer": request.headers['Referer'] if 'Referer' in request.headers else None,
-                # "Origin": request.headers['Origin'] if 'Origin' in request.headers else None,
-                # "Connection": request.headers['Connection'] if 'Connection' in request.headers else None
-            }
-            tk_header = request.headers.get('XSA-API-KEY')
-            if tk_header is None:
-                return {"success": False, "message": "Login token required"}, 401
-            try:
-                identity = decode_token(tk_header).get('identity')
-            except JWTDecodeError:
-                return {"success": False, "message": "Incorrect login token"}, 401
-            except ExpiredSignatureError:
-                return {"success": False, "message": "Expired login token"}, 401
-            if not identity:
-                return {"success": False, "message": "Login token required"}, 401
-            
-            coincidences = set(identity.keys()).intersection(set(current_request_data.keys()))
-            autentication_data_ok = True
-            for curr_key in coincidences:
-                if identity[curr_key] != current_request_data[curr_key]:
-                    autentication_data_ok = False
-                    break
-            if not autentication_data_ok:
-                return {"success": False, "message": "Unauthorized access"}, 401
+            response, code = get_identity()
+            if code != 200:
+                return response, code
+            identity = response["identity"]
 
             user = identity["user"]
             uri = "{{name}}/api/{{current_component.name}}/{{curr_serv_pack}}/DELETE"
