@@ -57,7 +57,7 @@ def get_identity():
             break
     if not autentication_data_ok:
         return {"success": False, "message": "Unauthorized access"}, 401
-    return {"success": True, "identity": identity_data}, 200
+    return {"success": True, "identity": identity_data, "token": tk_header}, 200
 
 
 def login_expect():
@@ -159,6 +159,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             if code != 200:
                 return response, code
             identity = response["identity"]
+            identity["token"] = response["token"]
 
             user = identity["user"]
             uri = "{{name}}/api/{{current_component.name}}/{{curr_serv_pack}}/GET"
@@ -215,6 +216,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             if code != 200:
                 return response, code
             identity = response["identity"]
+            identity["token"] = response["token"]
 
             user = identity["user"]
             uri = "{{name}}/api/{{current_component.name}}/{{curr_serv_pack}}/POST"
@@ -271,6 +273,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             if code != 200:
                 return response, code
             identity = response["identity"]
+            identity["token"] = response["token"]
 
             user = identity["user"]
             uri = "{{name}}/api/{{current_component.name}}/{{curr_serv_pack}}/PUT"
@@ -327,6 +330,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             if code != 200:
                 return response, code
             identity = response["identity"]
+            identity["token"] = response["token"]
 
             user = identity["user"]
             uri = "{{name}}/api/{{current_component.name}}/{{curr_serv_pack}}/DELETE"
