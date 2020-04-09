@@ -75,7 +75,7 @@ def login_expect():
                       help='Current password')
     return data
         
-{% if hide_api and security %}
+{% if hide_api or not security %}
 @{{name}}_api.default_namespace.hide{% endif %}
 @{{name}}_api.default_namespace.route('/login')
 class Login(Resource):
@@ -92,11 +92,11 @@ class Login(Resource):
         response = {"access_token":ac_token, "refresh_token":rf_token}
         return response, 200
         
-{% if hide_api and security %}
+{% if hide_api or not security %}
 @{{name}}_api.default_namespace.hide{% endif %}
 @{{name}}_api.default_namespace.route('/refresh')
 class Refresh(Resource):
-    @jwt_refresh_token_required
+    @jwt_optional
     @{{name}}_api.doc(security='api_key')
     @{{name}}_api.response(200, 'Success')
     @{{name}}_api.response(401, 'Unauthorized')
@@ -111,7 +111,7 @@ class Refresh(Resource):
         response = {"access_token":token}
         return response, 200
     
-{% if hide_api and security %}
+{% if hide_api or not security %}
 @{{name}}_api.default_namespace.hide{% endif %}
 @{{name}}_api.default_namespace.route('/logout')
 class Logout(Resource):
@@ -126,9 +126,9 @@ class Logout(Resource):
         if code != 200:
             return response, code
         identity_data = response["identity"]
-        return identity_data, 200
+        return identity_data, 200{% for current_component in components %}
 
-{% for current_component in components %}
+
 # Package {{current_component.name}} {% if current_component.is_service %}
 from projects.{{current_component.name}}.services import service_pack as {{current_component.name}}{% else %}
 from packages.{{current_component.name}}.services import service_pack as {{current_component.name}}

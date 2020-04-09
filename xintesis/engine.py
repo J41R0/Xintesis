@@ -134,19 +134,7 @@ class XtsEngine:
                 init_obj = import_module('packages.' + component_name)
                 try:
                     obj_dict = init_obj.init_objects(pack_config)
-                    if 'use_security' in curr_cfg.keys() and curr_cfg['use_security']:
-                        # load authorization model
-                        try:
-                            project.set_object(component_name, obj_dict)
-                            try:
-                                auth_id = init_obj.AUTH
-                                project.set_auth(obj_dict[auth_id])
-                            except Exception as err:
-                                logging.warning("No authorization model defined in project " + project.name)
-                        except Exception as err:
-                            raise Exception("Error " + str(err) + " loading security package")
-                    else:
-                        project.set_object(component_name, obj_dict)
+                    project.set_object(component_name, obj_dict)
                 except Exception as err:
                     logging.warning("Not objects created for component '" + component_name
                                     + "' in project '" + project.name + "' due: " + str(err))
@@ -165,8 +153,8 @@ class XtsEngine:
         serv_pack_list = []
 
         # security vars
-        security_data = curr_cfg['security']
-        use_security = security_data['use_security']
+        security_cfg = curr_cfg['security']
+        use_security = security_cfg['use_security']
 
         # project description
         proj_desc = curr_cfg['description']
@@ -220,14 +208,9 @@ class XtsEngine:
             # set up project configuration and init self project objects
             if 'config' in curr_cfg.keys():
                 project.config = curr_cfg['config']
-            project.init_objects()
+            project.init_objects(security_cfg)
         except Exception as err:
             logging.critical("Error importing API " + proj_id + ": " + str(err))
-
-        # init security config
-        if use_security:
-            # load and init security component
-            XtsEngine.__load_component(proj_id, project, security_data, project_deps)
 
         logging.info("Project " + proj_id + " API generated")
         return project, project_api

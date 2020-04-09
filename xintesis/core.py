@@ -4,7 +4,6 @@ import os
 import shutil
 import inspect
 import logging
-from functools import wraps
 from importlib import import_module
 
 from flask_restplus import fields, reqparse
@@ -139,12 +138,18 @@ class Project:
         # project configuration data
         self.config = None
 
-    def init_objects(self):
+    def init_objects(self, security_cfg):
         try:
             module_ini_obj = import_module('projects.' + self.name)
             load_cfg = self.config.copy()
             load_cfg['uris'] = self.uri_list.copy()
             self.__objects[self.name] = module_ini_obj.init_objects(load_cfg)
+            if security_cfg['use_security']:
+                try:
+                    auth_id = module_ini_obj.AUTH
+                    self.set_auth(self.__objects[self.name][auth_id])
+                except Exception as err:
+                    logging.warning("No authorization model defined in project " + self.name)
         except:
             logging.warning("Cannot init project " + self.name + " objects due error importing 'init_objects' function")
 
