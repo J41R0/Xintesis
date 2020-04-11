@@ -70,7 +70,8 @@ class XtsEngine:
         app.config['JWT_ALGORITHM'] = 'HS512'
         app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
         jwt = JWTManager(app)
-        manager.set_singleton(jwt, "xsa_jwt")
+        manager.set_singleton(jwt, "xts_jwt")
+        manager.set_singleton(app, "xts_app")
         if not manager.server_loaded:
             projects_dict = dict()
             # server load and project interface generation

@@ -4,17 +4,20 @@ from jinja2 import Environment
 
 project_template = """
 # default imports
-from flask import Blueprint, request, send_file
+from flask import Blueprint, request, send_file, jsonify
 from flask_restplus import Api, Resource, reqparse
 from flask_jwt_extended import jwt_optional, jwt_required, decode_token, create_access_token, create_refresh_token
 from jwt.exceptions import DecodeError as JWTDecodeError, ExpiredSignatureError
 
-from xintesis import Project, ServicePack
+from xintesis import Project, ServicePack, manager
 
 # const definition
 SUCC = 0
 DATA = 1
 TYPE = 2
+
+ACCESS_TOKEN = "access"
+REFRESH_TOKEN = "refresh"
 
 project = Project("{{name}}")
 
@@ -22,6 +25,9 @@ project = Project("{{name}}")
 authorizations = {'api_key': {'type': 'apiKey', 'in': 'header', 'name': 'XSA-API-KEY'}}
 project_api = Blueprint('{{name}}', __name__, url_prefix='/{{name}}/api')
 {{name}}_api = Api(project_api, title='{{show_name}} Project', description='{{description}}', authorizations=authorizations)
+{% if security %}
+jwt = manager.get_singleton('xts_jwt')
+logged_active_tokens = {}
 
 
 def get_identity():
@@ -39,15 +45,15 @@ def get_identity():
     }
     tk_header = request.headers.get('XSA-API-KEY')
     if tk_header is None:
-        return {"success": False, "message": "Login token required"}, 401
+        return {"success": False, "message": "Access token required"}, 401
     try:
         identity_data = decode_token(tk_header).get('identity')
     except JWTDecodeError:
-        return {"success": False, "message": "Incorrect login token"}, 401
+        return {"success": False, "message": "Incorrect access token"}, 401
     except ExpiredSignatureError:
-        return {"success": False, "message": "Expired login token"}, 401
+        return {"success": False, "message": "Expired access token"}, 401
     if not identity_data:
-        return {"success": False, "message": "Login token required"}, 401
+        return {"success": False, "message": "Access token required"}, 401
 
     coincidences = set(identity_data.keys()).intersection(set(current_request_data.keys()))
     autentication_data_ok = True
@@ -56,8 +62,42 @@ def get_identity():
             autentication_data_ok = False
             break
     if not autentication_data_ok:
-        return {"success": False, "message": "Unauthorized access"}, 401
+        return {"success": False, "message": "Unauthorized"}, 401
     return {"success": True, "identity": identity_data, "token": tk_header}, 200
+
+
+def add_user_token(username, token, type):
+    if type == ACCESS_TOKEN:
+        if username in logged_active_tokens:
+            logged_active_tokens[username].add(token)
+        else:
+            logged_active_tokens[username] = set()
+            logged_active_tokens[username].add(token)
+
+            
+def remove_user_token(username, token):
+    if username in logged_active_tokens and token in logged_active_tokens[username]:
+        logged_active_tokens[username].remove(token)
+        if len(logged_active_tokens[username]) == 0:
+            del logged_active_tokens[username]
+
+
+def is_valid_token(username, token):
+    # first verify access
+    if username in logged_active_tokens and token in logged_active_tokens[username]:
+        return True
+
+        
+@jwt.expired_token_loader
+def my_expired_token_callback(expired_token):
+    token_type = expired_token['type']
+    identity = decode_token(expired_token).get('identity')
+    username = identity["username"]
+    remove_user_token(username, expired_token)
+    return jsonify({
+        'status': 401,
+        'msg': 'The {} token has expired'.format(token_type)
+    }), 401
 
 
 def login_expect():
@@ -73,9 +113,9 @@ def login_expect():
                       type=str,
                       location='form',
                       help='Current password')
-    return data
+    return data{% endif %}
         
-{% if hide_api or not security %}
+{% if security %}{% if hide_api %}
 @{{name}}_api.default_namespace.hide{% endif %}
 @{{name}}_api.default_namespace.route('/login')
 class Login(Resource):
@@ -88,11 +128,11 @@ class Login(Resource):
         identity_data = dict(request.headers)
         identity_data["username"] = my_input['username']
         ac_token = create_access_token(identity=identity_data)
-        rf_token = create_refresh_token(identity=identity_data)
-        response = {"access_token":ac_token, "refresh_token":rf_token}
+        add_user_token(my_input['username'], ac_token, type=ACCESS_TOKEN)
+        response = {"access_token":ac_token}
         return response, 200
         
-{% if hide_api or not security %}
+{% if hide_api %}
 @{{name}}_api.default_namespace.hide{% endif %}
 @{{name}}_api.default_namespace.route('/refresh')
 class Refresh(Resource):
@@ -106,12 +146,18 @@ class Refresh(Resource):
         response, code = get_identity()
         if code != 200:
             return response, code
-        identity_data = response["identity"] 
-        token = create_access_token(identity=identity_data)
-        response = {"access_token":token}
-        return response, 200
+        identity_data = response["identity"]
+        token = response["token"]
+        if is_valid_token(identity_data['username'], token):
+            remove_user_token(identity_data['username'], token)
+            new_token = create_access_token(identity=identity_data)
+            add_user_token(identity_data['username'], new_token, type=ACCESS_TOKEN)
+            response = {"access_token":new_token}
+            return response, 200
+        else:
+            return {"success": False, "message": "Invalid access token"}, 401
     
-{% if hide_api or not security %}
+{% if hide_api %}
 @{{name}}_api.default_namespace.hide{% endif %}
 @{{name}}_api.default_namespace.route('/logout')
 class Logout(Resource):
@@ -126,7 +172,12 @@ class Logout(Resource):
         if code != 200:
             return response, code
         identity_data = response["identity"]
-        return identity_data, 200{% for current_component in components %}
+        token = response["token"]
+        if is_valid_token(identity_data['username'], token):
+            remove_user_token(identity_data['username'], token)
+            return {"success": True}, 200
+        else:
+            return {"success": False, "message": "Invalid access token"}, 401{% endif %}{% for current_component in components %}
 
 
 # Package {{current_component.name}} {% if current_component.is_service %}
@@ -161,10 +212,10 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             identity = response["identity"]
             identity["token"] = response["token"]
 
-            user = identity["user"]
+            username = identity["username"]
             uri = "{{name}}/api/{{current_component.name}}/{{curr_serv_pack}}/GET"
 
-            authorized = project.auth(user, uri)
+            authorized = project.auth(username, uri)
             if not authorized:
                 return {"success": False, "message": "You have not access to this resource"}, 401
             identity['uri'] = uri
@@ -218,10 +269,10 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             identity = response["identity"]
             identity["token"] = response["token"]
 
-            user = identity["user"]
+            username = identity["username"]
             uri = "{{name}}/api/{{current_component.name}}/{{curr_serv_pack}}/POST"
 
-            authorized = project.auth(user, uri)
+            authorized = project.auth(username, uri)
             if not authorized:
                 return {"success": False, "message": "You have not access to this resource"}, 401
             identity['uri'] = uri
@@ -275,10 +326,10 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             identity = response["identity"]
             identity["token"] = response["token"]
 
-            user = identity["user"]
+            username = identity["username"]
             uri = "{{name}}/api/{{current_component.name}}/{{curr_serv_pack}}/PUT"
 
-            authorized = project.auth(user, uri)
+            authorized = project.auth(username, uri)
             if not authorized:
                 return {"success": False, "message": "You have not access to this resource"}, 401
             identity['uri'] = uri
@@ -332,10 +383,10 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             identity = response["identity"]
             identity["token"] = response["token"]
 
-            user = identity["user"]
+            username = identity["username"]
             uri = "{{name}}/api/{{current_component.name}}/{{curr_serv_pack}}/DELETE"
 
-            authorized = project.auth(user, uri)
+            authorized = project.auth(username, uri)
             if not authorized:
                 return {"success": False, "message": "You have not access to this resource"}, 401
             identity['uri'] = uri
