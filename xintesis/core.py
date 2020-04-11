@@ -148,7 +148,7 @@ class Project:
                 try:
                     auth_id = module_ini_obj.AUTH
                     self.set_auth(self.__objects[self.name][auth_id])
-                except Exception as err:
+                except:
                     logging.warning("No authorization model defined in project " + self.name)
         except:
             logging.warning("Cannot init project " + self.name + " objects due error importing 'init_objects' function")

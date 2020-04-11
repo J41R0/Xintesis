@@ -9,11 +9,14 @@ import sys
 import xintesis
 from xintesis.engine import XtsEngine
 
+xintesis.PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+xintesis.core.init()
+
 if __name__ == "__main__":
-    xintesis.PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
-    sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-    xintesis.core.init()
     XtsEngine.run()
+else:
+    application = XtsEngine().app
 
 """
 

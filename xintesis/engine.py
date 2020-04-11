@@ -8,6 +8,7 @@ from importlib import import_module
 from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+from werkzeug.contrib.fixers import ProxyFix
 
 import xintesis
 from xintesis import manager
@@ -19,6 +20,9 @@ class XtsEngine:
     Xintesis engine class for load data for server start and all services interfaces generation
     """
     generated = False
+
+    def __init__(self):
+        self.app = XtsEngine.load_app()
 
     @staticmethod
     def run(is_wsgi=False):
@@ -59,6 +63,7 @@ class XtsEngine:
         manager.load()
         # create application
         app = Flask("Xintesis Server")
+        app.wsgi_app = ProxyFix(app.wsgi_app)
         app.config['JWT_SECRET_KEY'] = os.getenv('XTS_SECRET_KEY', "may the force be with you ...")
         app.config['JWT_HEADER_NAME'] = 'XSA-API-KEY'
         app.config['JWT_HEADER_TYPE'] = str

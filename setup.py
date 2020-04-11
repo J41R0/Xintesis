@@ -15,7 +15,6 @@ setuptools.setup(
     url="https://github.com/J41R0/Xintesis",
     packages=setuptools.find_packages(),
     install_requires=[
-        'setuptools',
         'werkzeug >= 0.15.4',
         'flask_restplus >= 0.11.0',
         'flask_cors >= 3.0.7',
