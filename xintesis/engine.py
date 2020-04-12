@@ -171,7 +171,7 @@ class XtsEngine:
                 Exception("Project " + proj_id + " can not load " + curr_cfg[
                     'name'] + " sub-dependencies")
             try:
-                package = import_module('packages.' + curr_dep + '.services')
+                package = import_module('packages.' + curr_dep + '.controller')
             except Exception as err:
                 raise Exception("Cannot import module " + curr_dep + " due: " + str(err))
             # set package name
@@ -180,7 +180,7 @@ class XtsEngine:
             serv_pack_list.append(package.service_pack)
         # include service.py services in project API
         try:
-            package = import_module("projects." + proj_id + '.services')
+            package = import_module("projects." + proj_id + '.controller')
             # TODO: change repeated project name in URI
             package.service_pack.name = proj_id
             uri_dict[proj_id] = package.service_pack.list_uris()

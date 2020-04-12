@@ -21,10 +21,22 @@ else:
 """
 
 def_init = """
+AUTH = "auth_function"
+LOGIN = "login_function"
+
+def dummy_auth(username, uri):
+    # should return true if the user have access to required uri
+    return True
+
+def dummy_login(username, password):
+    # should return true if the user and password are correct
+    return True
+
+
 def init_objects(config_dict):
     \"\"\"
     Init required project's objects using defined configuration. Returns an object dict that is added to project object. 
-    This method is called  in server load step. 
+    The authorization an login functions must be defined here. This method is called in server load step. 
     Args:
         config_dict: project config dict
 
@@ -34,6 +46,10 @@ def init_objects(config_dict):
     # only testing purposes
     obj_list = dict()
     obj_list['input_cfg'] = config_dict
+    # set authorization function to project
+    obj_list[AUTH] = dummy_auth
+    # set login function to project
+    obj_list[LOGIN] = dummy_login
     return obj_list
 
 """
@@ -72,7 +88,7 @@ description: >
   Default sample project. Change me !!!
 mode: development
 security:
-  use_security: False
+  use_security: True
 logging:
   level: 1
   format: '%%(asctime)s - %%(levelname)s - %%(filename)s - %%(lineno)d - %%(message)s'
@@ -307,7 +323,7 @@ def create_defaults(dir):
     with open(dir + "/packages/demo/__init__.py", 'w') as demo_init:
         demo_init.write(def_init)
 
-    with open(dir + "/packages/demo/services.py", 'w') as demo_pack_services:
+    with open(dir + "/packages/demo/controller.py", 'w') as demo_pack_services:
         demo_pack_services.write(demo_pack)
 
     # default project files
@@ -317,7 +333,7 @@ def create_defaults(dir):
     with open(dir + "/projects/default_proj/config.yaml", 'w') as def_proj_cfg:
         def_proj_cfg.write(proj_cfg)
 
-    with open(dir + "/projects/default_proj/services.py", 'w') as def_proj_services:
+    with open(dir + "/projects/default_proj/controller.py", 'w') as def_proj_services:
         def_proj_services.write(demo_proj)
 
     with open(dir + "/projects/default_proj/test/test_project.py", 'w') as def_proj_test:
