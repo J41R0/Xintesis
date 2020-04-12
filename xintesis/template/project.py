@@ -127,10 +127,14 @@ class Login(Resource):
         my_input = self.expect.parse_args()
         identity_data = dict(request.headers)
         identity_data["username"] = my_input['username']
-        ac_token = create_access_token(identity=identity_data)
-        add_user_token(my_input['username'], ac_token, type=ACCESS_TOKEN)
-        response = {"access_token":ac_token}
-        return response, 200
+        password = my_input['password']
+        if project.login(identity_data["username"], password):
+            ac_token = create_access_token(identity=identity_data)
+            add_user_token(my_input['username'], ac_token, type=ACCESS_TOKEN)
+            response = {"access_token":ac_token}
+            return response, 200
+        else:
+            return {"success": False, "message": "Incorrect credentials"}, 401
         
 {% if hide_api %}
 @{{name}}_api.default_namespace.hide{% endif %}

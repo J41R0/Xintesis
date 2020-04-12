@@ -133,8 +133,10 @@ class Project:
         self.__objects = dict()
         self.__shared_obj = dict()
         self.uri_list = list()
-        # security model obj
-        self.__auth = None
+        # authorization function reference
+        self.__auth_function = None
+        # login function reference
+        self.__login_function = None
         # project configuration data
         self.config = None
 
@@ -149,16 +151,29 @@ class Project:
                     auth_id = module_ini_obj.AUTH
                     self.set_auth(self.__objects[self.name][auth_id])
                 except:
-                    logging.warning("No authorization model defined in project " + self.name)
+                    logging.error("No authorization function defined in project " + self.name)
+                try:
+                    login_id = module_ini_obj.LOGIN
+                    self.set_login(self.__objects[self.name][login_id])
+                except:
+                    logging.error("No login function defined in project " + self.name)
         except:
-            logging.warning("Cannot init project " + self.name + " objects due error importing 'init_objects' function")
+            logging.error("Cannot init project " + self.name + " objects due error importing 'init_objects' function")
 
-    def set_auth(self, auth_obj):
-        self.__auth = auth_obj
+    def set_auth(self, auth_function):
+        self.__auth_function = auth_function
+
+    def set_login(self, login_function):
+        self.__login_function = login_function
 
     def auth(self, user, uri):
-        if self.__auth is not None:
-            return self.__auth(user, uri)
+        if self.__auth_function is not None:
+            return self.__auth_function(user, uri)
+        return False
+
+    def login(self, username, password):
+        if self.__auth_function is not None:
+            return self.__login_function(username, password)
         return False
 
     def set_uris(self, component_uri_dict):
