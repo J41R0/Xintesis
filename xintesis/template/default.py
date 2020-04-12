@@ -21,6 +21,23 @@ else:
 """
 
 def_init = """
+def init_objects(config_dict):
+    \"\"\"
+    Init required project's objects using defined configuration. Returns an object dict that is added to project object. 
+    The authorization an login functions must be defined here. This method is called in server load step. 
+    Args:
+        config_dict: project config dict
+
+    Returns: dict object in way {'<obj_nname>':<object>, ... }
+
+    \"\"\"
+    # only testing purposes
+    obj_list = dict()
+    obj_list['input_cfg'] = config_dict
+    return obj_list
+"""
+
+proj_init = """
 AUTH = "auth_function"
 LOGIN = "login_function"
 
@@ -51,7 +68,6 @@ def init_objects(config_dict):
     # set login function to project
     obj_list[LOGIN] = dummy_login
     return obj_list
-
 """
 
 app_cfg = """[server]
@@ -328,7 +344,7 @@ def create_defaults(dir):
 
     # default project files
     with open(dir + "/projects/default_proj/__init__.py", 'w') as def_proj_init:
-        def_proj_init.write(def_init)
+        def_proj_init.write(proj_init)
 
     with open(dir + "/projects/default_proj/config.yaml", 'w') as def_proj_cfg:
         def_proj_cfg.write(proj_cfg)
