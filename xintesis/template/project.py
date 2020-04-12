@@ -185,8 +185,8 @@ class Logout(Resource):
 
 
 # Package {{current_component.name}} {% if current_component.is_service %}
-from projects.{{current_component.name}}.services import service_pack as {{current_component.name}}{% else %}
-from packages.{{current_component.name}}.services import service_pack as {{current_component.name}}
+from projects.{{current_component.name}}.controller import service_pack as {{current_component.name}}{% else %}
+from packages.{{current_component.name}}.controller import service_pack as {{current_component.name}}
 {% endif %}
 {{current_component.name}}_ns = {{name}}_api.namespace('{{current_component.name}}', description='{{current_component.desc}}')
 
