@@ -200,11 +200,11 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
         get_model = {{name}}_api.model('{{curr_serv_pack}} Get Model', {{current_component.name}}.my_services["{{curr_serv_pack}}"].get["expect"]){% endif %}{% if current_component.my_services[curr_serv_pack].get["marshall"] %}
         get_marshall = {{name}}_api.model('{{curr_serv_pack}} Get Response', {{current_component.name}}.my_services["{{curr_serv_pack}}"].get["marshall"]){% endif %}
         @jwt_optional
-        {% if security and current_component.my_services[curr_serv_pack].get["security"] %}@{{name}}_api.doc(security='api_key')
+        {% if security %}@{{name}}_api.doc(security='api_key')
         {% endif %}{% if current_component.my_services[curr_serv_pack].get["expect"] %}{% if current_component.my_services[curr_serv_pack].get["parser"] %}@{{name}}_api.expect({{current_component.name}}.my_services["{{curr_serv_pack}}"].get["expect"]){% else %}@{{name}}_api.expect(get_model){% endif %}
         {% endif %}{% if current_component.my_services[curr_serv_pack].get["marshall"] %}@{{name}}_api.marshal_with(get_marshall, code=200)
         {% endif %}@{{name}}_api.response(200, 'Success')
-        @{{name}}_api.response(418, 'Process error'){% if security and current_component.my_services[curr_serv_pack].get["security"] %}
+        @{{name}}_api.response(418, 'Process error'){% if security %}
         @{{name}}_api.response(401, 'Unauthorized')
         @{{name}}_api.response(403, 'Forbidden'){% endif %}
         def get(self):
@@ -228,7 +228,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             {% else %}input = {{name}}_api.payload{% endif %}
             response = {"success": False, "data": "", "message": ""}
             try:
-                obj_dict = project.get_object('{{current_component.name}}'){% if security and current_component.my_services[curr_serv_pack].get["security"] %}
+                obj_dict = project.get_object('{{current_component.name}}'){% if security %}
                 call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].get_call(project=project.file_handler, input=input, obj_dict=obj_dict, identity=identity){% else %}
                 call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].get_call(project=project.file_handler, input=input, obj_dict=obj_dict){% endif %}
                 code = 200
@@ -245,7 +245,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
                 if succ:
                     response["data"] = data
                 else:
-                    response["message"] = data{% if security and current_component.my_services[curr_serv_pack].get["security"] %}
+                    response["message"] = data{% if security %}
                     code = res_type if res_type in (401, 403) else 418{% else %}
                     code = 418{% endif %}
                 return response, code
@@ -302,7 +302,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
                 if succ:
                     response["data"] = data
                 else:
-                    response["message"] = data{% if security and current_component.my_services[curr_serv_pack].get["security"] %}
+                    response["message"] = data{% if security %}
                     code = res_type if res_type in (401, 403) else 418{% else %}
                     code = 418{% endif %}
                 return response, code
@@ -359,7 +359,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
                 if succ:
                     response["data"] = data
                 else:
-                    response["message"] = data{% if security and current_component.my_services[curr_serv_pack].get["security"] %}
+                    response["message"] = data{% if security %}
                     code = res_type if res_type in (401, 403) else 418{% else %}
                     code = 418{% endif %}
                 return response, code
@@ -413,7 +413,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
                 if succ:
                     response["data"] = data
                 else:
-                    response["message"] = data{% if security and current_component.my_services[curr_serv_pack].get["security"] %}
+                    response["message"] = data{% if security %}
                     code = res_type if res_type in (401, 403) else 418{% else %}
                     code = 418{% endif %}
                 return response, code
