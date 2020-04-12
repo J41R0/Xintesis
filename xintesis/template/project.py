@@ -209,7 +209,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
         @{{name}}_api.response(403, 'Forbidden'){% endif %}
         def get(self):
             \"\"\"{{current_component.my_services[curr_serv_pack].get["doc"]}}\"\"\"
-            {% if security %}
+            {% if security and current_component.my_services[curr_serv_pack].get["security"] %}
             response, code = get_identity()
             if code != 200:
                 return response, code
@@ -266,7 +266,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
         @{{name}}_api.response(403, 'Forbidden'){% endif %}
         def post(self):
             \"\"\"{{current_component.my_services[curr_serv_pack].post["doc"]}}\"\"\"
-            {% if security %}
+            {% if security and current_component.my_services[curr_serv_pack].post["security"] %}
             response, code = get_identity()
             if code != 200:
                 return response, code
@@ -323,7 +323,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
         @{{name}}_api.response(403, 'Forbidden'){% endif %}
         def put(self):
             \"\"\"{{current_component.my_services[curr_serv_pack].put["doc"]}}\"\"\"
-            {% if security %}
+            {% if security and current_component.my_services[curr_serv_pack].put["security"] %}
             response, code = get_identity()
             if code != 200:
                 return response, code
@@ -380,7 +380,7 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
         @{{name}}_api.response(403, 'Forbidden'){% endif %}
         def delete(self):
             \"\"\"{{current_component.my_services[curr_serv_pack].delete["doc"]}}\"\"\"
-            {% if security %}
+            {% if security and current_component.my_services[curr_serv_pack].delete["security"] %}
             response, code = get_identity()
             if code != 200:
                 return response, code
