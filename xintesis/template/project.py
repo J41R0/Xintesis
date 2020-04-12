@@ -229,8 +229,8 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             response = {"success": False, "data": "", "message": ""}
             try:
                 obj_dict = project.get_object('{{current_component.name}}'){% if security %}
-                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].get_call(project=project.file_handler, input=input, obj_dict=obj_dict, identity=identity){% else %}
-                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].get_call(project=project.file_handler, input=input, obj_dict=obj_dict){% endif %}
+                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].get_call(file_handler=project.file_handler, input=input, obj_dict=obj_dict, identity=identity){% else %}
+                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].get_call(file_handler=project.file_handler, input=input, obj_dict=obj_dict){% endif %}
                 code = 200
                 succ = call[SUCC]
                 data = call[DATA]
@@ -286,8 +286,8 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             response = {"success": False, "data": "", "message": ""}
             try:
                 obj_dict = project.get_object('{{current_component.name}}'){% if security and current_component.my_services[curr_serv_pack].post["security"] %}
-                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].post_call(project=project.file_handler, input=input, obj_dict=obj_dict, identity=identity){% else %}
-                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].post_call(project=project.file_handler, input=input, obj_dict=obj_dict){% endif %}
+                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].post_call(file_handler=project.file_handler, input=input, obj_dict=obj_dict, identity=identity){% else %}
+                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].post_call(file_handler=project.file_handler, input=input, obj_dict=obj_dict){% endif %}
                 code = 201
                 succ = call[SUCC]
                 data = call[DATA]
@@ -343,8 +343,8 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             response = {"success": False, "data": "", "message": ""}
             try:
                 obj_dict = project.get_object('{{current_component.name}}'){% if security and current_component.my_services[curr_serv_pack].put["security"] %}
-                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].put_call(project=project.file_handler, input=input, obj_dict=obj_dict, identity=identity){% else %}
-                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].put_call(project=project.file_handler, input=input, obj_dict=obj_dict){% endif %}
+                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].put_call(file_handler=project.file_handler, input=input, obj_dict=obj_dict, identity=identity){% else %}
+                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].put_call(file_handler=project.file_handler, input=input, obj_dict=obj_dict){% endif %}
                 code = 201
                 succ = call[SUCC]
                 data = call[DATA]
@@ -401,8 +401,8 @@ class {{current_component.name.upper()}}_SERVICES:{% for curr_serv_pack in curre
             try:
                 obj_dict = project.get_object('{{current_component.name}}')
                 obj_dict = project.get_object('{{current_component.name}}'){% if security and current_component.my_services[curr_serv_pack].delete["security"] %}
-                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].delete_call(project=project.file_handler, input=input, obj_dict=obj_dict, identity=identity){% else %}
-                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].delete_call(project=project.file_handler, input=input, obj_dict=obj_dict){% endif %}
+                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].delete_call(file_handler=project.file_handler, input=input, obj_dict=obj_dict, identity=identity){% else %}
+                call = {{current_component.name}}.my_services["{{curr_serv_pack}}"].delete_call(file_handler=project.file_handler, input=input, obj_dict=obj_dict){% endif %}
                 code = 204
                 succ = call[SUCC]
                 data = call[DATA]

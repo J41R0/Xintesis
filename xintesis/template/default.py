@@ -151,12 +151,11 @@ class DemoPack:
 
     @service_pack.unsec
     @service_pack.get_method
-    def some_method(project, input, obj_dict):
+    def some_method(file_handler, input, obj_dict):
         \"\"\"My GET example DOC\"\"\"
-        # result = demo_method_to_service(project)
         result = "CHANGE"
         # some code
-        print(project)
+        print(file_handler)
         # print(obj_dict)
         return True, result
 
@@ -180,7 +179,7 @@ class DemoPack:
     @service_pack.post_method
     def some_method2(**kwargs):
         \"\"\"My POST example DOC\"\"\"
-        project = kwargs['project']
+        file_handler = kwargs['file_handler']
         my_input = kwargs['input']
         obj_dict = kwargs['obj_dict']
         
@@ -190,16 +189,16 @@ class DemoPack:
         
         file = input['some_file']
         save_file_dir = "downloads" 
-        if not project.exist(save_file_dir):
-            project.mkdir(save_file_dir)
+        if not file_handler.exist(save_file_dir):
+            file_handler.mkdir(save_file_dir)
         
         # saving file    
-        if my_input['img_file'].filename not in project.lsdir():
+        if my_input['img_file'].filename not in file_handler.lsdir():
             # internally use secure filename 
-            project.save_file(save_file_dir, file) 
+            file_handler.save_file(save_file_dir, file) 
         
         # returning a file, the only case to return 3 params 
-        return True, project.lsdir()[-1], "file"
+        return True, file_handler.lsdir()[-1], "file"
         
     @service_pack.put_expect
     def expect_put():
@@ -212,7 +211,7 @@ class DemoPack:
         
     @service_pack.put_method
     def some_method3(**kwargs):
-        project = kwargs['project']
+        file_handler = kwargs['file_handler']
         my_input = kwargs['input']
         obj_dict = kwargs['obj_dict']
         
@@ -223,7 +222,7 @@ class DemoPack:
         
     @service_pack.delete_method
     def some_method4(**kwargs):
-        project = kwargs['project']
+        file_handler = kwargs['file_handler']
         my_input = kwargs['input']
         obj_dict = kwargs['obj_dict']
         # if not expect defined kwargs['input']['id_list'] is a list of strings  
@@ -244,8 +243,9 @@ service_pack = ServicePack("My project general description.")
 
 @service_pack.service
 class DemoProj:
+    @service_pack.unsec
     @service_pack.delete_method
-    def test_method(project, input, obj_dict):
+    def test_method(file_handler, input, obj_dict):
         \"\"\" Complex help
         \\n This method do nothing but show a JSON as doc 
         \\n JSON: 
