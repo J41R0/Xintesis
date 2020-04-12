@@ -149,9 +149,8 @@ class DemoPack:
                             help='Some input data')
         return expect
 
-    @service_pack.unsec
     @service_pack.get_method
-    def some_method(file_handler, input, obj_dict):
+    def some_method(file_handler, input, obj_dict, identity):
         \"\"\"My GET example DOC\"\"\"
         result = "CHANGE"
         # some code
@@ -182,6 +181,7 @@ class DemoPack:
         file_handler = kwargs['file_handler']
         my_input = kwargs['input']
         obj_dict = kwargs['obj_dict']
+        identity = kwargs['identity']
         
         # some code
         data = input['some_data']
@@ -214,6 +214,7 @@ class DemoPack:
         file_handler = kwargs['file_handler']
         my_input = kwargs['input']
         obj_dict = kwargs['obj_dict']
+        identity = kwargs['identity']
         
         print(my_input)
         
@@ -225,12 +226,13 @@ class DemoPack:
         file_handler = kwargs['file_handler']
         my_input = kwargs['input']
         obj_dict = kwargs['obj_dict']
+        identity = kwargs['identity']
         # if not expect defined kwargs['input']['id_list'] is a list of strings  
         dict_out = {}
         dict_out['numbers'] = [1,2,3]
         dict_out['text'] = "first numbers"
         # auto format dict to JSON
-        return True, my_input
+        return True, identity
 
 """
 
@@ -257,7 +259,8 @@ class DemoProj:
         \\n\\t   ]
         \\n\\t }
         \"\"\"
-        # exceptions are handled in other place 
+        # if used @service_pack.unsec decorator identity data is not provided 
+        # exceptions are handled automatically  
         # params can be access using kwargs or the variables project, input, obj_dict
         raise Exception("help")
         return True, "Never see it"
@@ -276,7 +279,7 @@ class DemoProj:
 
     @service_pack.post_method
     def test_method3(**kwargs):
-        return True, kwargs['input']
+        return True, kwargs
 
     @service_pack.put_expect
     def put_expect():
