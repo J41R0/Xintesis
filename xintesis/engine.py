@@ -68,7 +68,7 @@ class XtsEngine:
         app.config['JWT_HEADER_NAME'] = 'XSA-API-KEY'
         app.config['JWT_HEADER_TYPE'] = str
         app.config['JWT_ALGORITHM'] = 'HS512'
-        app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
+        app.config['JWT_ACCESS_TOKEN_EXPIRES'] = True
         jwt = JWTManager(app)
         manager.set_singleton(jwt, "xts_jwt")
         manager.set_singleton(app, "xts_app")
@@ -249,6 +249,7 @@ class XtsEngine:
                             XtsEngine.__load_component(proj_id, project, curr_cfg, project_deps)
                         if first:
                             # for first loading step
+
                             first = False
                             project_deps = curr_cfg['dependencies'] if curr_cfg['dependencies'] else []
                             if proj_id in project_deps:

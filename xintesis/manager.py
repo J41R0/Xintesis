@@ -205,7 +205,7 @@ def load(app_name="xsa"):
 
 def __check_components():
     """
-    Detecta los paquetes y modulos para que los usen las aplicaciones
+    Search for packages and modules that can be used
     Returns: None
 
     """
@@ -281,54 +281,3 @@ def set_single_data(data_name, value_):
 
 def list_objects():
     return __singletons.keys()
-
-
-class Singleton(object):
-    """ Clase que implementa el patron singleton para python.
-        Example:
-            class Prueba(Singleton):
-                nombre = u""
-
-            def test_singleton():
-                a = Prueba()
-                b = Prueba()
-                a.nombre = u"Pajaro"
-                b.nombre = u"Perro"
-                print(a.nombre, b.nombre)  # Perro  Perro
-    """
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = object.__new__(cls, *args, **kwargs)
-
-        return cls._instance
-        pass
-
-
-# Method decorator for singleton...
-def singleton(class_):
-    """ Metodo que gestiona un patron singleton para objetos en python.
-    :param class_: objeto de tipo <class>
-    :return: unico objeto de la clase.
-    Example:
-        @singleton
-        class Prueba:
-            nombre = u""
-
-        def test_singleton():
-            a = Prueba()
-            b = Prueba()
-            a.nombre = u"Pajaro"
-            b.nombre = u"Perro"
-            print(a.nombre, b.nombre)  # Perro  Perro
-    """
-    instances = {}
-
-    def get_singleton(*args, **kwargs):
-        if class_ not in instances:
-            instances[class_] = class_(*args, **kwargs)
-        return instances[class_]
-
-    return get_singleton
-    pass
