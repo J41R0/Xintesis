@@ -27,6 +27,6 @@ setuptools.setup(
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: Debian compatible",
+        "Operating System :: OS Independent",
     ],
 )
