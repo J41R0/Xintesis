@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='Xintesis',
+    name='xintesis',
     version='1.0',
     scripts=[],
     author="Jairo Lefebre",
