@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='xintesis',
+    name='Xintesis',
     version='1.0',
     scripts=[],
     author="Jairo Lefebre",
@@ -20,8 +20,7 @@ setuptools.setup(
         'flask_cors >= 3.0.7',
         'flask_jwt_extended >= 3.10.0',
         'jinja2 >= 2.10.1',
-        'click >= 7.0',
-        'selenium-requests >= 1.3'
+        'click >= 7.0'
     ],
     python_requires='>=3.6',
     classifiers=[
