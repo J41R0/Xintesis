@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='xintesis',
-    version='1.0',
+    version='0.1',
     scripts=[],
     author="Jairo Lefebre",
     author_email="jairo.lefebre@gmail.com",
